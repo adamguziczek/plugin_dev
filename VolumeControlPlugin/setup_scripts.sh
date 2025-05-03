@@ -170,29 +170,29 @@ install_dependencies() {
     fi
 }
 
-# Install Windows cross-compilation dependencies
-install_windows_cross_deps() {
-    info "Setting up Windows cross-compilation environment..."
+# Install Windows cross-compilation dependencies for MinGW
+install_windows_mingw_cross_deps() {
+    info "Setting up Windows MinGW cross-compilation environment..."
     
     # Check if MinGW is already installed
     if dpkg -l | grep -q "^ii  mingw-w64 "; then
         success "MinGW-w64 is already installed."
     else
         warning "MinGW-w64 cross-compiler is not installed."
-        echo -e "${YELLOW}This is required for building Windows VST3 plugins from WSL.${NC}"
-        read -p "Do you want to install Windows cross-compilation tools? (y/n): " install_mingw
+        echo -e "${YELLOW}This can be used for building Windows VST3 plugins from WSL, but has limitations.${NC}"
+        read -p "Do you want to install MinGW cross-compilation tools? (y/n): " install_mingw
         
         if [[ $install_mingw != [yY]* ]]; then
-            info "Skipping Windows cross-compilation setup."
+            info "Skipping MinGW cross-compilation setup."
             echo "You can install it later with: sudo apt-get install mingw-w64 binutils-mingw-w64 g++-mingw-w64"
             return 0
         fi
         
         info "Installing MinGW-w64 and related tools..."
         if sudo apt-get update && sudo apt-get install -y "${WINDOWS_DEPS[@]}"; then
-            success "Windows cross-compilation tools installed successfully!"
+            success "Windows MinGW cross-compilation tools installed successfully!"
         else
-            error "Failed to install Windows cross-compilation tools."
+            error "Failed to install Windows MinGW cross-compilation tools."
             echo "Please try installing them manually using:"
             echo "sudo apt-get install ${WINDOWS_DEPS[*]}"
             return 1
@@ -208,18 +208,140 @@ install_windows_cross_deps() {
         echo "Please check your installation."
     fi
     
-    info "Cross-compilation environment is now set up."
+    warning "Note: JUCE does not officially support MinGW, so you may encounter compilation issues."
+    warning "For production builds, consider using MSVC cross-compilation or native Windows builds."
+    
+    info "MinGW cross-compilation environment is now set up."
     echo "You can build Windows VST3 plugins using: ./build_windows.sh"
     
     return 0
 }
 
-# Make scripts executable
+# Set up MSVC cross-compilation environment
+setup_msvc_cross_compilation() {
+    info "Setting up Windows MSVC cross-compilation environment..."
+    
+    # Check if we're in WSL
+    if ! is_wsl; then
+        error "MSVC cross-compilation requires Windows Subsystem for Linux (WSL)."
+        echo "This approach only works when running in WSL with Visual Studio installed on Windows."
+        return 1
+    fi
+    
+    # Check if we can access Windows drives
+    if [ ! -d "/mnt/c" ]; then
+        error "Cannot access Windows drives (/mnt/c)."
+        echo "Make sure you're in WSL with proper access to the Windows file system."
+        return 1
+    fi
+    
+    success "WSL environment detected with access to Windows drives."
+    
+    # Look for possible Visual Studio installations
+    info "Looking for Visual Studio installations on Windows..."
+    VS_PATHS=(
+        "/mnt/c/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC"
+        "/mnt/c/Program Files/Microsoft Visual Studio/2022/Professional/VC/Tools/MSVC"
+        "/mnt/c/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/MSVC"
+        "/mnt/c/Program Files/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC"
+        "/mnt/c/Program Files/Microsoft Visual Studio/2019/Professional/VC/Tools/MSVC"
+        "/mnt/c/Program Files/Microsoft Visual Studio/2019/Enterprise/VC/Tools/MSVC"
+    )
+    
+    WINDOWS_SDK_PATHS=(
+        "/mnt/c/Program Files (x86)/Windows Kits/10"
+    )
+    
+    VS_PATH=""
+    VS_VERSION=""
+    
+    # Find Visual Studio installation
+    for path in "${VS_PATHS[@]}"; do
+        if [ -d "$path" ]; then
+            # Find the highest version
+            for version in "$path"/*; do
+                if [ -d "$version" ]; then
+                    VS_PATH="$path"
+                    VS_VERSION=$(basename "$version")
+                fi
+            done
+            if [ -n "$VS_PATH" ]; then
+                break
+            fi
+        fi
+    done
+    
+    # Find Windows SDK
+    WINDOWS_SDK_PATH=""
+    for path in "${WINDOWS_SDK_PATHS[@]}"; do
+        if [ -d "$path" ]; then
+            WINDOWS_SDK_PATH="$path"
+            break
+        fi
+    done
+    
+    # Check if Visual Studio and Windows SDK were found
+    if [ -z "$VS_PATH" ] || [ -z "$VS_VERSION" ]; then
+        warning "Could not find Visual Studio installation in expected locations."
+        echo "You will need to manually set the MSVC_BASE_PATH environment variable."
+    else
+        success "Found Visual Studio at: $VS_PATH/$VS_VERSION"
+    fi
+    
+    if [ -z "$WINDOWS_SDK_PATH" ]; then
+        warning "Could not find Windows SDK in expected locations."
+        echo "You will need to manually set the WINDOWS_KITS_BASE_PATH environment variable."
+    else
+        success "Found Windows SDK at: $WINDOWS_SDK_PATH"
+    fi
+    
+    # Set up environment variables
+    echo ""
+    info "Setting up MSVC environment variables..."
+    
+    if [ -n "$VS_PATH" ] && [ -n "$VS_VERSION" ]; then
+        MSVC_PATH="$VS_PATH/$VS_VERSION"
+        echo "export MSVC_BASE_PATH=\"$MSVC_PATH\"" >> ~/.bashrc
+        export MSVC_BASE_PATH="$MSVC_PATH"
+        success "Added MSVC_BASE_PATH to ~/.bashrc and current session"
+    else
+        warning "Please set MSVC_BASE_PATH manually (see instructions in WINDOWS_BUILD_OPTIONS.md)"
+    fi
+    
+    if [ -n "$WINDOWS_SDK_PATH" ]; then
+        echo "export WINDOWS_KITS_BASE_PATH=\"$WINDOWS_SDK_PATH\"" >> ~/.bashrc
+        export WINDOWS_KITS_BASE_PATH="$WINDOWS_SDK_PATH"
+        success "Added WINDOWS_KITS_BASE_PATH to ~/.bashrc and current session"
+    else
+        warning "Please set WINDOWS_KITS_BASE_PATH manually (see instructions in WINDOWS_BUILD_OPTIONS.md)"
+    fi
+    
+    # Create msvc-toolchain.cmake if it doesn't exist
+    if [ ! -f "msvc-toolchain.cmake" ]; then
+        warning "msvc-toolchain.cmake not found. Make sure it exists before running build_windows_msvc.sh"
+    fi
+    
+    # Make the build script executable
+    chmod +x build_windows_msvc.sh
+    success "Made build_windows_msvc.sh executable"
+    
+    if [ -n "$VS_PATH" ] && [ -n "$VS_VERSION" ] && [ -n "$WINDOWS_SDK_PATH" ]; then
+        success "MSVC cross-compilation environment is now set up!"
+        echo "You can build Windows VST3 plugins using: ./build_windows_msvc.sh"
+    else
+        info "Partial MSVC cross-compilation setup completed."
+        echo "Review WINDOWS_BUILD_OPTIONS.md for further instructions on setting up MSVC cross-compilation."
+    fi
+    
+    return 0
+}
+
+# Make build scripts executable
 make_scripts_executable() {
     info "Making build scripts executable..."
     
     # List of scripts to make executable
-    SCRIPTS=("build.sh" "build_release.sh" "build_windows.sh" "clean.sh" "setup_scripts.sh")
+    SCRIPTS=("build.sh" "build_release.sh" "build_windows.sh" "build_windows_msvc.sh" "clean.sh" "setup_scripts.sh")
     
     for script in "${SCRIPTS[@]}"; do
         if [ -f "$script" ]; then
@@ -257,11 +379,47 @@ main() {
     
     # Ask if user wants to set up Windows cross-compilation
     echo -e "\nWould you like to set up Windows cross-compilation for building Windows VST3 plugins?"
-    echo "This allows creating VST3 plugins that work in FL Studio and other Windows DAWs."
-    read -p "Set up Windows cross-compilation? [y/N]: " setup_windows
+    echo "There are two options for cross-compilation from WSL/Linux to Windows:"
+    echo ""
+    echo "1. MinGW Cross-Compilation (simpler setup, but limited JUCE support)"
+    echo "   - Uses MinGW-w64 compiler"
+    echo "   - JUCE does not officially support MinGW"
+    echo "   - May encounter compatibility issues"
+    echo ""
+    echo "2. MSVC Cross-Compilation (better compatibility, requires Visual Studio on Windows)"
+    echo "   - Uses Microsoft's Visual C++ compiler (officially supported by JUCE)"
+    echo "   - Requires Visual Studio installed on Windows"
+    echo "   - Only works from WSL with access to Windows"
+    echo ""
+    echo "For more details, see WINDOWS_BUILD_OPTIONS.md"
+    echo ""
+    read -p "Would you like to set up Windows cross-compilation? [y/N]: " setup_windows
     
     if [[ $setup_windows == [yY]* ]]; then
-        install_windows_cross_deps
+        echo ""
+        echo "Which cross-compilation method do you want to set up?"
+        echo "1) MinGW Cross-Compilation"
+        echo "2) MSVC Cross-Compilation (requires Visual Studio on Windows and WSL)"
+        echo "3) Both methods"
+        echo "4) Cancel"
+        read -p "Enter your choice [1-4]: " cross_method
+        
+        case $cross_method in
+            1)
+                install_windows_mingw_cross_deps
+                ;;
+            2)
+                setup_msvc_cross_compilation
+                ;;
+            3)
+                install_windows_mingw_cross_deps
+                setup_msvc_cross_compilation
+                ;;
+            *)
+                info "Skipping Windows cross-compilation setup."
+                echo "You can run this script again later to set up Windows cross-compilation."
+                ;;
+        esac
     else
         info "Skipping Windows cross-compilation setup."
         echo "You can run this script again later to set up Windows cross-compilation."
@@ -270,9 +428,17 @@ main() {
     echo -e "\n${GREEN}Setup completed!${NC}"
     echo -e "You can now run:"
     echo "  - ./build.sh to build the Linux plugin"
+    
     if command -v x86_64-w64-mingw32-gcc &> /dev/null; then
-        echo "  - ./build_windows.sh to build the Windows VST3 plugin for FL Studio"
+        echo "  - ./build_windows.sh to build the Windows VST3 plugin using MinGW"
     fi
+    
+    if [ -n "$MSVC_BASE_PATH" ] && [ -n "$WINDOWS_KITS_BASE_PATH" ]; then
+        echo "  - ./build_windows_msvc.sh to build the Windows VST3 plugin using MSVC"
+    fi
+    
+    echo ""
+    echo "See WINDOWS_BUILD_OPTIONS.md for more details on Windows build options"
 }
 
 # Run the main function
