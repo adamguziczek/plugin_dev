@@ -26,7 +26,7 @@ This file documents all system dependencies required for building the VolumeCont
 
 ## Network Dependencies
 
-- **libcurl4-openssl-dev** - libcurl development libraries (for network operations)
+- **libcurl4-openssl-dev** - libcurl development libraries (for network operations) - **CRITICAL: Must be properly linked**
 
 ## Installation on Debian/Ubuntu (including WSL)
 
@@ -58,7 +58,7 @@ The script will detect your distribution, check which dependencies are already i
 When building in WSL (Windows Subsystem for Linux), the following considerations apply:
 
 1. All dependencies need to be installed within the WSL environment (not in Windows).
-2. The CMakeLists.txt file includes explicit include and link directory configurations for GTK and WebKit2GTK to address potential path issues in WSL.
+2. The CMakeLists.txt file includes explicit include and link directory configurations for GTK, WebKit2GTK, and libcurl to address potential path issues in WSL.
 3. The plugins built in WSL will be Linux plugins (not Windows VST3s).
 4. For testing the plugins on Windows, you would need to build them on Windows or set up a more complex cross-compilation environment.
 
@@ -75,6 +75,9 @@ pkg-config --modversion gtk+-3.0
 
 # For WebKit2GTK
 pkg-config --modversion webkit2gtk-4.1
+
+# For libcurl
+pkg-config --modversion libcurl
 
 # For ALSA
 pkg-config --modversion alsa
@@ -96,3 +99,29 @@ pkg-config --cflags --libs gtk+-3.0
 
 # For WebKit2GTK
 pkg-config --cflags --libs webkit2gtk-4.1
+
+# For libcurl
+pkg-config --cflags --libs libcurl
+```
+
+## Common Build Errors and Solutions
+
+### Undefined References to libcurl Functions
+
+If you see errors like:
+```
+undefined reference to `curl_easy_init'
+undefined reference to `curl_easy_setopt'
+undefined reference to `curl_easy_cleanup'
+```
+
+This means the libcurl headers were found, but the library isn't properly linked. The solution is to:
+
+1. Ensure libcurl4-openssl-dev is installed
+2. Make sure the CMakeLists.txt has the following:
+   - `pkg_check_modules(CURL REQUIRED libcurl)`
+   - `include_directories(${CURL_INCLUDE_DIRS})`
+   - `link_directories(${CURL_LIBRARY_DIRS})`
+   - Add `${CURL_LIBRARIES}` to the `target_link_libraries` section
+
+This has already been fixed in the current CMakeLists.txt, but if you modify or create a new CMake configuration, remember to include these elements.
