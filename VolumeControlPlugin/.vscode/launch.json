@@ -1,0 +1,35 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch VST3 Plugin in Debugger",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build_vs/VolumeControlPlugin_artefacts/Release/VST3/VolumeControlPlugin.vst3/Contents/x86_64-win/VolumeControlPlugin.vst3",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "console": "externalTerminal",
+            "windows": {
+                "program": "${workspaceFolder}\\build_vs\\VolumeControlPlugin_artefacts\\Release\\VST3\\VolumeControlPlugin.vst3\\Contents\\x86_64-win\\VolumeControlPlugin.vst3",
+                "cwd": "${workspaceFolder}"
+            }
+        },
+        {
+            "name": "Launch Standalone Plugin",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build_vs/VolumeControlPlugin_artefacts/Release/Standalone/VolumeControlPlugin.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "console": "externalTerminal",
+            "windows": {
+                "program": "${workspaceFolder}\\build_vs\\VolumeControlPlugin_artefacts\\Release\\Standalone\\VolumeControlPlugin.exe",
+                "cwd": "${workspaceFolder}"
+            }
+        }
+    ]
+}
