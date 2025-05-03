@@ -40,9 +40,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DJUCE_WINDOWS=1 -DJUCE_WASAPI=1 -DJUCE_
 # Ensure JUCE uses Windows file paths
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DJUCE_WINDOWS_USE_NATIVE_FILE_PATHS=1")
 
-# Additional linker flags
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libstdc++ -Wl,-Bstatic,--whole-archive -lpthread -Wl,--no-whole-archive")
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -static-libgcc -static-libstdc++ -Wl,-Bstatic,--whole-archive -lpthread -Wl,--no-whole-archive")
+# Additional linker flags - modified to fix pthread duplicate symbol errors
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libstdc++ -Wl,--as-needed -lpthread")
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -static-libgcc -static-libstdc++ -Wl,--as-needed -lpthread")
 
 # Link with Windows libraries needed by JUCE
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lole32 -loleaut32 -lrpcrt4 -lshlwapi -luuid -lwsock32 -lws2_32 -lwininet -lversion -lwinmm")
