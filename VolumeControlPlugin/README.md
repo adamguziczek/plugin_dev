@@ -15,6 +15,7 @@ A simple volume control audio plugin built with the JUCE framework. This plugin 
 - VST3
 - AU (Audio Unit - macOS only)
 - Standalone application
+- Windows VST3 (through cross-compilation from WSL/Linux)
 
 ## Building the Plugin
 
@@ -57,6 +58,21 @@ For a release (optimized) build:
    ```
 
 The built plugins will be available in the `build` directory under their respective format folders.
+
+### Building for Windows (FL Studio Compatible)
+
+To build a Windows VST3 plugin that works in FL Studio and other Windows DAWs directly from Linux/WSL:
+
+1. Install MinGW-w64 cross-compilation tools (the setup script can do this for you)
+2. Build the Windows VST3 plugin:
+   ```
+   ./build_windows.sh
+   ```
+3. Copy the resulting VST3 plugin to your Windows VST3 directory
+
+The Windows build script handles all the cross-compilation complexities automatically, creating a VST3 plugin that works natively in Windows DAWs like FL Studio.
+
+See [README_BUILD.md](./README_BUILD.md) for detailed cross-compilation instructions and troubleshooting.
 
 ## Usage
 
