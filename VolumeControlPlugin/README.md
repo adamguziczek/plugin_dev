@@ -15,7 +15,6 @@ A simple volume control audio plugin built with the JUCE framework. This plugin 
 - VST3
 - AU (Audio Unit - macOS only)
 - Standalone application
-- Windows VST3 (through cross-compilation from WSL/Linux)
 
 ## Building the Plugin
 
@@ -39,7 +38,7 @@ chmod +x setup_scripts.sh
 
 See [README_BUILD.md](./README_BUILD.md) for detailed information about required dependencies.
 
-### Build Steps
+### Build Steps for Linux
 
 1. Make sure you have the JUCE framework in the parent directory of this project
 2. Run the setup script to prepare for building:
@@ -59,20 +58,25 @@ For a release (optimized) build:
 
 The built plugins will be available in the `build` directory under their respective format folders.
 
-### Building for Windows (FL Studio Compatible)
+### Building for Windows (Recommended Approach)
 
-To build a Windows VST3 plugin that works in FL Studio and other Windows DAWs directly from Linux/WSL:
+JUCE officially supports building Windows plugins with Visual Studio. We recommend using Visual Studio Code with Remote Development for the best experience:
 
-1. Install MinGW-w64 cross-compilation tools (the setup script can do this for you)
-2. Build the Windows VST3 plugin:
-   ```
-   ./build_windows.sh
-   ```
-3. Copy the resulting VST3 plugin to your Windows VST3 directory
+1. **Install Required Software**:
+   - Visual Studio 2019 Community Edition or newer on Windows
+   - Visual Studio Code with the Remote - WSL extension
 
-The Windows build script handles all the cross-compilation complexities automatically, creating a VST3 plugin that works natively in Windows DAWs like FL Studio.
+2. **Open Project in VSCode**:
+   - Open VSCode and connect to your WSL instance
+   - Open the VolumeControlPlugin folder
+   - VSCode will detect the `.vscode` configuration automatically
 
-See [README_BUILD.md](./README_BUILD.md) for detailed cross-compilation instructions and troubleshooting.
+3. **Build the Plugin**:
+   - Press `Ctrl+Shift+B` to access build tasks
+   - Select "Build on Windows" to build using Visual Studio
+   - The build process will execute on the Windows side
+
+See [VSCode_README.md](./VSCode_README.md) for detailed instructions on setting up and using the VSCode Remote Development workflow.
 
 ## Usage
 
@@ -91,8 +95,7 @@ This plugin demonstrates basic audio plugin development with JUCE, including:
 
 Feel free to use this as a starting point for your own audio plugin projects.
 
-## Detailed Documentation
+## Documentation
 
-For more detailed build instructions, dependency information, and troubleshooting:
-
-- [README_BUILD.md](./README_BUILD.md) - Comprehensive build instructions
+- [VSCode_README.md](./VSCode_README.md) - Detailed VSCode Remote Development instructions
+- [README_BUILD.md](./README_BUILD.md) - Comprehensive build instructions for Linux
