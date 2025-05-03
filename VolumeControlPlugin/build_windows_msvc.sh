@@ -49,15 +49,51 @@ error() {
     log_output "${RED}[ERROR]${NC} $1"
 }
 
+# Check for WSL in multiple ways to improve detection reliability
+check_wsl() {
+    # Method 1: Check /proc/version for Microsoft
+    if grep -q Microsoft /proc/version; then
+        return 0
+    fi
+    
+    # Method 2: Check for WSL environment variable
+    if [[ -n "$WSL_DISTRO_NAME" ]]; then
+        return 0
+    fi
+    
+    # Method 3: Check for Windows mounts
+    if [ -d "/mnt/c" ] && [ -d "/mnt/c/Windows" ]; then
+        return 0
+    fi
+    
+    # Not in WSL
+    return 1
+}
+
 # Check MSVC prerequisites
 check_prerequisites() {
     info "Checking prerequisites for Windows MSVC cross-compilation..."
     
-    # Check for WSL
-    if ! grep -q Microsoft /proc/version; then
+    # Check for WSL using improved detection method
+    if ! check_wsl; then
         error "This script is designed to run in Windows Subsystem for Linux (WSL)."
         echo "The MSVC cross-compilation requires access to Visual Studio installed on Windows."
-        exit 1
+        echo ""
+        warning "You appear to not be running in WSL or WSL was not detected properly."
+        warning "If you are running in WSL, please try these troubleshooting steps:"
+        echo "1. Make sure you can access Windows files: ls /mnt/c"
+        echo "2. Try opening a dedicated WSL terminal outside of VS Code"
+        echo "3. Try running: wsl --set-default-version 2 (from PowerShell as admin)"
+        echo "4. If you have access to /mnt/c, you can continue anyway by setting:"
+        echo "   export WSL_DETECTED=1"
+        echo "   Then run this script again."
+        
+        # Allow override for environments where detection fails but Windows paths work
+        if [ "$WSL_DETECTED" = "1" ]; then
+            warning "WSL detection override is set. Proceeding anyway..."
+        else
+            exit 1
+        fi
     fi
     
     # Check for MSVC_BASE_PATH environment variable
