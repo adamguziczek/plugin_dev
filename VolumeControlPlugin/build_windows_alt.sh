@@ -122,7 +122,7 @@ check_prerequisites() {
         error "Specialized Windows-MSVC-WSL.cmake file not found."
         echo "This file is required for the alternative build approach."
         exit 1
-    }
+    fi
     
     info "Using CMake version $cmake_version"
     success "All prerequisites satisfied!"
