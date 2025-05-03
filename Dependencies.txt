@@ -1,0 +1,98 @@
+# Volume Control Plugin - System Dependencies
+
+This file documents all system dependencies required for building the VolumeControlPlugin on Linux and WSL (Windows Subsystem for Linux).
+
+## Core Build Tools
+
+- **build-essential** - Basic C/C++ development tools
+- **cmake** (version 3.15 or higher) - CMake build system
+- **pkg-config** - Helper tool for compiling applications and libraries
+
+## GUI and Display Dependencies (Required by JUCE)
+
+- **libgtk-3-dev** - GTK3 development libraries (for GUI support)
+- **libwebkit2gtk-4.1-dev** - WebKit2GTK development libraries (for web content)
+- **libx11-dev** - X11 development libraries (for window management)
+- **libgl1-mesa-dev** - OpenGL development libraries (for graphics support)
+
+## Audio Dependencies
+
+- **libasound2-dev** - ALSA development libraries (for audio support)
+
+## Font and Text Rendering Dependencies
+
+- **libfreetype6-dev** - FreeType2 development libraries (for font rendering)
+- **libfontconfig1-dev** - Fontconfig development libraries (for font configuration)
+
+## Network Dependencies
+
+- **libcurl4-openssl-dev** - libcurl development libraries (for network operations)
+
+## Installation on Debian/Ubuntu (including WSL)
+
+To install all required dependencies on Debian/Ubuntu-based systems, run:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y build-essential cmake pkg-config libgtk-3-dev \
+  libwebkit2gtk-4.1-dev libasound2-dev libfreetype6-dev libfontconfig1-dev \
+  libgl1-mesa-dev libcurl4-openssl-dev libx11-dev
+```
+
+## Automated Installation
+
+The provided `setup_scripts.sh` script can automatically check and install all required dependencies:
+
+```bash
+# Make the script executable
+chmod +x setup_scripts.sh
+
+# Run the script
+./setup_scripts.sh
+```
+
+The script will detect your distribution, check which dependencies are already installed, and install any missing ones (after asking for confirmation).
+
+## WSL-Specific Information
+
+When building in WSL (Windows Subsystem for Linux), the following considerations apply:
+
+1. All dependencies need to be installed within the WSL environment (not in Windows).
+2. The CMakeLists.txt file includes explicit include and link directory configurations for GTK and WebKit2GTK to address potential path issues in WSL.
+3. The plugins built in WSL will be Linux plugins (not Windows VST3s).
+4. For testing the plugins on Windows, you would need to build them on Windows or set up a more complex cross-compilation environment.
+
+## Verifying Dependencies
+
+To check if a particular dependency is installed:
+
+```bash
+# For packages
+dpkg -l | grep package-name
+
+# For GTK3
+pkg-config --modversion gtk+-3.0
+
+# For WebKit2GTK
+pkg-config --modversion webkit2gtk-4.1
+
+# For ALSA
+pkg-config --modversion alsa
+```
+
+## Troubleshooting Missing Dependencies
+
+If CMake cannot find a required dependency during configuration, ensure:
+
+1. The package is installed.
+2. The pkg-config files are properly set up.
+3. For WSL environments, the include and link directories in CMakeLists.txt match your system.
+
+For detailed path information, you can use:
+
+```bash
+# For GTK3
+pkg-config --cflags --libs gtk+-3.0
+
+# For WebKit2GTK
+pkg-config --cflags --libs webkit2gtk-4.1
