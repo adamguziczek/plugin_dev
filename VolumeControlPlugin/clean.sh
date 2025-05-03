@@ -30,7 +30,7 @@ error() {
 # Clean build directories
 clean_build_directories() {
     # List of build directories to clean
-    BUILD_DIRS=("build" "build_release" "build_windows")
+    BUILD_DIRS=("build" "build_release" "build_windows" "build_windows_msvc" "build_windows_alt" "build_vs")
     
     local any_cleaned=false
     
