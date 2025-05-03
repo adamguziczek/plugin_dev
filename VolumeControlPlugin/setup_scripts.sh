@@ -170,61 +170,42 @@ install_dependencies() {
     fi
 }
 
-# Install Windows cross-compilation dependencies for MinGW
-install_windows_mingw_cross_deps() {
-    info "Setting up Windows MinGW cross-compilation environment..."
-    
-    # Check if MinGW is already installed
-    if dpkg -l | grep -q "^ii  mingw-w64 "; then
-        success "MinGW-w64 is already installed."
-    else
-        warning "MinGW-w64 cross-compiler is not installed."
-        echo -e "${YELLOW}This can be used for building Windows VST3 plugins from WSL, but has limitations.${NC}"
-        read -p "Do you want to install MinGW cross-compilation tools? (y/n): " install_mingw
-        
-        if [[ $install_mingw != [yY]* ]]; then
-            info "Skipping MinGW cross-compilation setup."
-            echo "You can install it later with: sudo apt-get install mingw-w64 binutils-mingw-w64 g++-mingw-w64"
-            return 0
-        fi
-        
-        info "Installing MinGW-w64 and related tools..."
-        if sudo apt-get update && sudo apt-get install -y "${WINDOWS_DEPS[@]}"; then
-            success "Windows MinGW cross-compilation tools installed successfully!"
-        else
-            error "Failed to install Windows MinGW cross-compilation tools."
-            echo "Please try installing them manually using:"
-            echo "sudo apt-get install ${WINDOWS_DEPS[*]}"
-            return 1
-        fi
+# Check for WSL in multiple ways to improve detection reliability
+check_wsl() {
+    # Method 1: Check /proc/version for Microsoft
+    if grep -q Microsoft /proc/version; then
+        return 0
     fi
     
-    # Verify MinGW installation
-    if command -v x86_64-w64-mingw32-gcc &> /dev/null; then
-        local mingw_version=$(x86_64-w64-mingw32-gcc --version | head -n 1)
-        success "MinGW-w64 is properly installed: $mingw_version"
-    else
-        warning "MinGW-w64 seems to be installed but the compiler is not in the PATH."
-        echo "Please check your installation."
+    # Method 2: Check for WSL environment variable
+    if [[ -n "$WSL_DISTRO_NAME" ]]; then
+        return 0
     fi
     
-    warning "Note: JUCE does not officially support MinGW, so you may encounter compilation issues."
-    warning "For production builds, consider using MSVC cross-compilation or native Windows builds."
+    # Method 3: Check for Windows mounts
+    if [ -d "/mnt/c" ] && [ -d "/mnt/c/Windows" ]; then
+        return 0
+    fi
     
-    info "MinGW cross-compilation environment is now set up."
-    echo "You can build Windows VST3 plugins using: ./build_windows.sh"
-    
-    return 0
+    # Not in WSL
+    return 1
 }
 
 # Set up MSVC cross-compilation environment
 setup_msvc_cross_compilation() {
     info "Setting up Windows MSVC cross-compilation environment..."
     
-    # Check if we're in WSL
-    if ! is_wsl; then
+    # Check if we're in WSL using the improved detection
+    if ! check_wsl; then
         error "MSVC cross-compilation requires Windows Subsystem for Linux (WSL)."
         echo "This approach only works when running in WSL with Visual Studio installed on Windows."
+        echo ""
+        warning "You appear to not be running in WSL. Please try running this script from a WSL terminal."
+        echo "If you're using VS Code, try opening a WSL terminal outside of VS Code and run this script."
+        echo "You can open a WSL terminal by:"
+        echo "1. Open Windows Command Prompt or PowerShell"
+        echo "2. Type 'wsl' and press Enter"
+        echo "3. Navigate to this directory and run the script again"
         return 1
     fi
     
@@ -341,7 +322,7 @@ make_scripts_executable() {
     info "Making build scripts executable..."
     
     # List of scripts to make executable
-    SCRIPTS=("build.sh" "build_release.sh" "build_windows.sh" "build_windows_msvc.sh" "clean.sh" "setup_scripts.sh")
+    SCRIPTS=("build.sh" "build_release.sh" "build_windows_msvc.sh" "clean.sh" "setup_scripts.sh")
     
     for script in "${SCRIPTS[@]}"; do
         if [ -f "$script" ]; then
@@ -378,48 +359,19 @@ main() {
     fi
     
     # Ask if user wants to set up Windows cross-compilation
-    echo -e "\nWould you like to set up Windows cross-compilation for building Windows VST3 plugins?"
-    echo "There are two options for cross-compilation from WSL/Linux to Windows:"
+    echo -e "\nWould you like to set up MSVC cross-compilation for building Windows VST3 plugins?"
     echo ""
-    echo "1. MinGW Cross-Compilation (simpler setup, but limited JUCE support)"
-    echo "   - Uses MinGW-w64 compiler"
-    echo "   - JUCE does not officially support MinGW"
-    echo "   - May encounter compatibility issues"
-    echo ""
-    echo "2. MSVC Cross-Compilation (better compatibility, requires Visual Studio on Windows)"
+    echo "MSVC Cross-Compilation:"
     echo "   - Uses Microsoft's Visual C++ compiler (officially supported by JUCE)"
     echo "   - Requires Visual Studio installed on Windows"
     echo "   - Only works from WSL with access to Windows"
     echo ""
     echo "For more details, see WINDOWS_BUILD_OPTIONS.md"
     echo ""
-    read -p "Would you like to set up Windows cross-compilation? [y/N]: " setup_windows
+    read -p "Would you like to set up MSVC cross-compilation? [y/N]: " setup_windows
     
     if [[ $setup_windows == [yY]* ]]; then
-        echo ""
-        echo "Which cross-compilation method do you want to set up?"
-        echo "1) MinGW Cross-Compilation"
-        echo "2) MSVC Cross-Compilation (requires Visual Studio on Windows and WSL)"
-        echo "3) Both methods"
-        echo "4) Cancel"
-        read -p "Enter your choice [1-4]: " cross_method
-        
-        case $cross_method in
-            1)
-                install_windows_mingw_cross_deps
-                ;;
-            2)
-                setup_msvc_cross_compilation
-                ;;
-            3)
-                install_windows_mingw_cross_deps
-                setup_msvc_cross_compilation
-                ;;
-            *)
-                info "Skipping Windows cross-compilation setup."
-                echo "You can run this script again later to set up Windows cross-compilation."
-                ;;
-        esac
+        setup_msvc_cross_compilation
     else
         info "Skipping Windows cross-compilation setup."
         echo "You can run this script again later to set up Windows cross-compilation."
@@ -429,9 +381,6 @@ main() {
     echo -e "You can now run:"
     echo "  - ./build.sh to build the Linux plugin"
     
-    if command -v x86_64-w64-mingw32-gcc &> /dev/null; then
-        echo "  - ./build_windows.sh to build the Windows VST3 plugin using MinGW"
-    fi
     
     if [ -n "$MSVC_BASE_PATH" ] && [ -n "$WINDOWS_KITS_BASE_PATH" ]; then
         echo "  - ./build_windows_msvc.sh to build the Windows VST3 plugin using MSVC"
