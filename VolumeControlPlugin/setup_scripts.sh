@@ -52,7 +52,7 @@ install_dependencies_debian() {
         "libfreetype6-dev"      # freetype2
         "libfontconfig1-dev"    # fontconfig
         "libgl1-mesa-dev"       # gl
-        "libcurl4-openssl-dev"  # libcurl
+        "libcurl4-openssl-dev"  # libcurl (critical for network operations)
         "libx11-dev"            # X11 for JUCE GUI apps
     )
     
@@ -140,13 +140,26 @@ install_dependencies() {
         install_dependencies_other
     fi
     
+    # Verify and warn about critical dependencies (especially libcurl)
+    if dpkg -l | grep -q "^ii  libcurl4-openssl-dev "; then
+        success "libcurl development libraries are installed."
+    else
+        warning "libcurl development libraries are NOT installed. This is critical for building the plugin."
+        echo "Without libcurl properly installed and linked, you will encounter linker errors."
+        echo "The CMakeLists.txt has been configured to properly link libcurl, but the package must be installed."
+    fi
+    
     # Explanation for WSL users
     if is_wsl; then
         echo -e "\n${YELLOW}[WSL NOTE]${NC} When building JUCE applications in WSL, you may encounter issues with"
-        echo "library paths for GTK and WebKit2GTK. The CMakeLists.txt for this project"
+        echo "library paths for GTK, WebKit2GTK, and libcurl. The CMakeLists.txt for this project"
         echo "includes explicit include and link directory configurations to address this."
         echo "If you encounter build errors related to missing headers or libraries, you"
         echo "may need to modify the paths in CMakeLists.txt to match your system."
+        echo -e "\nTo diagnose path issues, you can run:"
+        echo "pkg-config --cflags --libs libcurl"
+        echo "pkg-config --cflags --libs gtk+-3.0"
+        echo "pkg-config --cflags --libs webkit2gtk-4.1"
     fi
 }
 
