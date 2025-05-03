@@ -1,9 +1,7 @@
 #!/bin/bash
-# clean.sh - Clean script for VolumeControlPlugin
+# clean.sh - Clean script for VolumeControlPlugin build directories
 # 
-# This script cleans the build directory, removing all generated files.
-# Use this script when you want to do a fresh build or when troubleshooting
-# build issues.
+# This script cleans the build directories (build, build_release, and build_windows).
 
 # Set up colors for output
 RED='\033[0;31m'
@@ -29,30 +27,36 @@ error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-# Clean the build directory
-clean_build_dir() {
-    info "Cleaning build directory..."
+# Clean build directories
+clean_build_directories() {
+    # List of build directories to clean
+    BUILD_DIRS=("build" "build_release" "build_windows")
     
-    if [ ! -d "build" ]; then
-        warning "Build directory does not exist. Nothing to clean."
-        return 0
-    fi
+    local any_cleaned=false
     
-    # Ask for confirmation before removing the build directory
-    read -p "Are you sure you want to remove the build directory? (y/n) " -n 1 -r
-    echo
+    for dir in "${BUILD_DIRS[@]}"; do
+        if [ -d "$dir" ]; then
+            info "Cleaning $dir directory..."
+            
+            # Ask for confirmation
+            read -p "Are you sure you want to remove the $dir directory? (y/n): " confirm
+            
+            if [[ $confirm == [yY]* ]]; then
+                rm -rf "$dir"
+                success "$dir directory removed successfully."
+                any_cleaned=true
+            else
+                warning "Skipping $dir directory clean."
+            fi
+        else
+            info "$dir directory does not exist, nothing to clean."
+        fi
+    done
     
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        info "Clean operation cancelled."
-        return 0
-    fi
-    
-    # Remove the build directory
-    if rm -rf build; then
-        success "Build directory removed successfully."
+    if [ "$any_cleaned" = true ]; then
+        success "Clean completed."
     else
-        error "Failed to remove build directory."
-        exit 1
+        info "No directories were cleaned."
     fi
 }
 
@@ -62,10 +66,9 @@ main() {
     echo -e "${BLUE}  VolumeControlPlugin Clean Script    ${NC}"
     echo -e "${BLUE}=======================================${NC}"
     
-    clean_build_dir
+    clean_build_directories
     
-    echo -e "\n${GREEN}Clean process completed!${NC}"
-    echo -e "You can now run ./build.sh to do a fresh build."
+    echo -e "\n${GREEN}Script completed.${NC}"
 }
 
 # Run the main function
