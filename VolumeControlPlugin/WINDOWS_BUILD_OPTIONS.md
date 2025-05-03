@@ -1,15 +1,16 @@
 # Windows Build Options for VolumeControlPlugin
 
-This document outlines various approaches for building the VolumeControlPlugin for Windows platforms, with detailed instructions for each method. Since the JUCE framework **does not officially support MinGW**, we need to explore alternative approaches.
+This document outlines the recommended approaches for building the VolumeControlPlugin for Windows platforms, with detailed instructions for each method. The JUCE framework **only officially supports Microsoft's Visual C++ compiler for Windows builds**.
 
 ## Overview of Available Options
 
-Here are the main approaches for building Windows VST3 plugins, in order of reliability and official support:
+Here are the recommended approaches for building Windows VST3 plugins, in order of reliability:
 
 1. **Native Windows Build with Visual Studio** (Recommended) - Building directly on Windows using Visual Studio and CMake
 2. **MSVC Cross-Compilation from WSL** - Using Microsoft's Visual C++ compiler from WSL
-3. **MinGW Cross-Compilation from WSL/Linux** (Limited Support) - Using MinGW-w64 to cross-compile from Linux/WSL
-4. **Docker-based Build Environment** - Using a containerized Windows build environment 
+3. **Docker-based Build Environment** - Using a containerized Windows build environment 
+
+**IMPORTANT NOTE**: The MinGW-based cross-compilation approach is not included as an option because JUCE does not support MinGW and it will not work reliably for building Windows plugins.
 
 ## 1. Native Windows Build with Visual Studio (Recommended)
 
@@ -141,60 +142,6 @@ This approach allows you to use Microsoft's Visual C++ compiler (which is offici
 - More complex environment setup with path mapping
 - Limited debugging capabilities compared to native builds
 
-## 3. MinGW Cross-Compilation from WSL/Linux (Limited Support)
-
-This is the approach implemented in the original `build_windows.sh` script. It uses MinGW-w64 to cross-compile from Linux/WSL to Windows, but **has limitations due to JUCE's lack of official MinGW support**.
-
-### Prerequisites
-
-- Ubuntu (or another Linux distribution), either native or in WSL
-- MinGW-w64 cross-compiler and tools
-- CMake (version 3.15 or higher)
-
-### Step-by-Step Instructions
-
-1. **Install required packages**:
-   ```bash
-   sudo apt update
-   sudo apt install build-essential cmake pkg-config
-   sudo apt install mingw-w64 binutils-mingw-w64 g++-mingw-w64
-   ```
-
-2. **Clone the repository**:
-   ```bash
-   git clone https://github.com/your-repo/VolumeControlPlugin.git
-   cd VolumeControlPlugin
-   ```
-
-3. **Clone JUCE in the parent directory**:
-   ```bash
-   cd ..
-   git clone https://github.com/juce-framework/JUCE.git
-   cd VolumeControlPlugin
-   ```
-
-4. **Make the build script executable**:
-   ```bash
-   chmod +x build_windows.sh
-   ```
-
-5. **Run the MinGW build script**:
-   ```bash
-   ./build_windows.sh
-   ```
-
-### Advantages
-
-- Works entirely in Linux/WSL without requiring Visual Studio
-- Simpler setup than MSVC cross-compilation
-- Can build Windows binaries from Linux
-
-### Disadvantages
-
-- **JUCE does not officially support MinGW** - likely to encounter compatibility issues
-- Some JUCE features may not work correctly
-- May encounter difficult-to-fix compilation errors
-- Built plugins might have compatibility issues with some Windows DAWs
 
 ## 4. Docker-based Build Environment
 
@@ -271,21 +218,12 @@ This approach uses Docker to create a consistent build environment with all nece
 |----------|--------------|---------------|-------------|-----------|--------------|
 | Native Windows Build | ✅ Official | Moderate | High | Excellent | Windows, Visual Studio |
 | MSVC Cross-Compilation | ✅ Official | Complex | Good | Limited | Windows + WSL, Visual Studio |
-| MinGW Cross-Compilation | ❌ Unofficial | Simple | Low | Limited | Linux/WSL, MinGW |
 | Docker-based | ✅ Official* | Complex | Good | Limited | Docker |
 
 *Depends on the compiler used in the Docker container
 
 ## Troubleshooting Common Issues
 
-### MinGW Compilation Issues
-
-**Issue**: Errors related to Harfbuzz or other JUCE components when using MinGW
-**Solution**: JUCE doesn't officially support MinGW. Consider switching to MSVC-based solutions, or try:
-
-1. Check `mingw-w64-toolchain.cmake` for warning suppressions
-2. Disable problematic JUCE features (JUCE_WEB_BROWSER, JUCE_USE_CURL)
-3. Use the `-fpermissive` flag to allow certain constructs
 
 ### MSVC Cross-Compilation Path Issues
 
