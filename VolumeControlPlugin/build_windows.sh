@@ -16,21 +16,36 @@ ROOT_DIR="${SCRIPT_DIR}"
 JUCE_DIR="${ROOT_DIR}/../JUCE"
 BUILD_DIR="${ROOT_DIR}/build_windows"
 
+# Create log file with timestamp
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+LOG_FILE="${ROOT_DIR}/build_windows_${TIMESTAMP}.log"
+
+# Initialize log file
+touch "$LOG_FILE"
+echo "VolumeControlPlugin Windows Build Log (${TIMESTAMP})" > "$LOG_FILE"
+echo "====================================================" >> "$LOG_FILE"
+echo "" >> "$LOG_FILE"
+
+# Log function that outputs to both console and log file
+log_output() {
+    echo -e "$1" | tee -a "$LOG_FILE"
+}
+
 # Print a message with a colored prefix
 info() {
-    echo -e "${BLUE}[INFO]${NC} $1"
+    log_output "${BLUE}[INFO]${NC} $1"
 }
 
 success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
+    log_output "${GREEN}[SUCCESS]${NC} $1"
 }
 
 warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
+    log_output "${YELLOW}[WARNING]${NC} $1"
 }
 
 error() {
-    echo -e "${RED}[ERROR]${NC} $1"
+    log_output "${RED}[ERROR]${NC} $1"
 }
 
 # Check MinGW prerequisites
@@ -219,9 +234,9 @@ display_results() {
 
 # Main build process
 main() {
-    echo -e "${BLUE}=============================================${NC}"
-    echo -e "${BLUE}  VolumeControlPlugin Windows Build Script   ${NC}"
-    echo -e "${BLUE}=============================================${NC}"
+    log_output "${BLUE}=============================================${NC}"
+    log_output "${BLUE}  VolumeControlPlugin Windows Build Script   ${NC}"
+    log_output "${BLUE}=============================================${NC}"
     
     check_prerequisites
     create_build_directory
@@ -230,8 +245,16 @@ main() {
     display_results
     copy_to_windows
     
-    echo -e "\n${GREEN}Build process completed.${NC}"
+    log_output "\n${GREEN}Build process completed.${NC}"
+    log_output "\n${BLUE}[INFO]${NC} Complete build log saved to: ${LOG_FILE}"
 }
+
+# Redirect all command output to log file as well
+exec > >(tee -a "$LOG_FILE") 2>&1
 
 # Run the main function
 main
+
+# Final message about log file location
+echo ""
+echo -e "${BLUE}[INFO]${NC} Full build log available at: ${LOG_FILE}"
