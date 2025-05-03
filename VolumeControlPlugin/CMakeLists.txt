@@ -86,3 +86,24 @@ target_include_directories(VolumeControlPlugin
         ${GTK3_INCLUDE_DIRS}
         ${WEBKIT2GTK_INCLUDE_DIRS}
         ${CURL_INCLUDE_DIRS})
+
+# Platform-specific compiler flags
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    # Remove pthread flag for Windows builds
+    target_compile_options(VolumeControlPlugin PRIVATE
+        $<$<COMPILE_LANGUAGE:CXX>:/W4 /bigobj /wd4996 /wd4267>
+        $<$<COMPILE_LANGUAGE:C>:/W4 /bigobj>)
+    
+    # Remove any Linux-specific link flags
+    set_target_properties(VolumeControlPlugin PROPERTIES
+        LINK_FLAGS "/SUBSYSTEM:WINDOWS")
+        
+    # Ensure we're using correct runtime library
+    set_property(TARGET VolumeControlPlugin PROPERTY
+        MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+else()
+    # Linux-specific flags
+    target_compile_options(VolumeControlPlugin PRIVATE
+        $<$<COMPILE_LANGUAGE:CXX>:-Wall -Wextra -pthread>
+        $<$<COMPILE_LANGUAGE:C>:-Wall -Wextra -pthread>)
+endif()
