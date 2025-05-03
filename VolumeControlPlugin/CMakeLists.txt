@@ -4,8 +4,8 @@ project(VolumeControlPlugin VERSION 1.0.0)
 
 # Set architecture settings for cross-compilation
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    set(JUCE_TARGET_ARCHITECTURE "x64" CACHE STRING "Target architecture for JUCE" FORCE)
-    set(VST3_SDK_TARGET_ARCHITECTURE "x86_64" CACHE STRING "VST3 architecture" FORCE)
+    set(JUCE_TARGET_ARCHITECTURE "x86_64" CACHE STRING "Target architecture for JUCE" FORCE)
+    set(VST3_ARCHITECTURE "x86_64" CACHE STRING "VST3 architecture" FORCE)
     set(JUCE_DISABLE_RUNTIME_ARCH_DETECTION ON CACHE BOOL "Disable runtime architecture detection" FORCE)
 endif()
 
