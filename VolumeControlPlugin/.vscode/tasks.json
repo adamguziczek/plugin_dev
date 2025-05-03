@@ -1,0 +1,55 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build on Windows",
+            "type": "shell",
+            "windows": {
+                "command": "cmake -G \"Visual Studio 16 2019\" -A x64 -B build_vs && cmake --build build_vs --config Release"
+            },
+            "linux": {
+                // Run Windows commands from WSL
+                "command": "powershell.exe -Command \"cd $(wslpath -w \"${workspaceFolder}\") && cmake -G \\\"Visual Studio 16 2019\\\" -A x64 -B build_vs && cmake --build build_vs --config Release\""
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            },
+            "problemMatcher": ["$msCompile"]
+        },
+        {
+            "label": "Clean Project",
+            "type": "shell",
+            "windows": {
+                "command": "if exist build_vs rd /s /q build_vs"
+            },
+            "linux": {
+                "command": "powershell.exe -Command \"cd $(wslpath -w \"${workspaceFolder}\") && if (Test-Path build_vs) { Remove-Item -Recurse -Force build_vs }\""
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        },
+        {
+            "label": "Open in Visual Studio",
+            "type": "shell",
+            "windows": {
+                "command": "start \"\" \"${workspaceFolder}\\build_vs\\VolumeControlPlugin.sln\""
+            },
+            "linux": {
+                "command": "powershell.exe -Command \"cd $(wslpath -w \"${workspaceFolder}\") && start \\\"\\\" \\\"./build_vs/VolumeControlPlugin.sln\\\"\""
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        }
+    ]
+}
