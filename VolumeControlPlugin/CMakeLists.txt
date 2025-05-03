@@ -22,6 +22,14 @@ link_directories(${WEBKIT2GTK_LIBRARY_DIRS})
 add_definitions(${WEBKIT2GTK_CFLAGS_OTHER})
 # ===========================================================
 
+# === libcurl Support (needed for network operations) ===
+pkg_check_modules(CURL REQUIRED libcurl)
+
+include_directories(${CURL_INCLUDE_DIRS})
+link_directories(${CURL_LIBRARY_DIRS})
+add_definitions(${CURL_CFLAGS_OTHER})
+# ======================================================
+
 # Include the JUCE CMake utilities
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../JUCE JUCE_build)
 
@@ -58,6 +66,7 @@ target_link_libraries(VolumeControlPlugin
         juce::juce_audio_utils
         ${GTK3_LIBRARIES}
         ${WEBKIT2GTK_LIBRARIES}
+        ${CURL_LIBRARIES}
     PUBLIC
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
@@ -68,4 +77,5 @@ target_include_directories(VolumeControlPlugin
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/Source
         ${GTK3_INCLUDE_DIRS}
-        ${WEBKIT2GTK_INCLUDE_DIRS})
+        ${WEBKIT2GTK_INCLUDE_DIRS}
+        ${CURL_INCLUDE_DIRS})
