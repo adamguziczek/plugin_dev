@@ -65,9 +65,30 @@ set(CMAKE_LINKER "${MSVC_BASE_PATH}/bin/Hostx64/x64/link.exe")
 set(CMAKE_C_COMPILER_WORKS 1)  # Skip compiler test which fails due to path issues
 set(CMAKE_CXX_COMPILER_WORKS 1)
 
-# Override compile commands to handle path conversion
-set(CMAKE_C_COMPILE_OBJECT "<CMAKE_C_COMPILER> <DEFINES> <INCLUDES> <FLAGS> /Fo<OBJECT> /Fd<TARGET_COMPILE_PDB> /FS -c <SOURCE>")
-set(CMAKE_CXX_COMPILE_OBJECT "<CMAKE_CXX_COMPILER> <DEFINES> <INCLUDES> <FLAGS> /Fo<OBJECT> /Fd<TARGET_COMPILE_PDB> /FS -c <SOURCE>")
+# Filter incompatible flags for MSVC
+set(CMAKE_C_COMPILE_OPTIONS_IPO "")
+set(CMAKE_CXX_COMPILE_OPTIONS_IPO "")
+
+# Custom flags for MSVC
+string(APPEND CMAKE_CXX_FLAGS " /nologo /EHsc /GR /bigobj /Zc:inline /Zc:wchar_t")
+string(APPEND CMAKE_C_FLAGS " /nologo /EHsc /bigobj")
+
+# Override compile commands for proper path and flag handling
+# Convert the source file path to Windows format
+set(CMAKE_C_COMPILE_OBJECT 
+    "\"${CMAKE_COMMAND}\" -E cmake_cl_compile_depends --dep-file=<OBJECT>.d --working-dir=<CMAKE_CURRENT_BINARY_DIR> --filter-prefix=\"\" -- \"<CMAKE_C_COMPILER>\" <DEFINES> <INCLUDES> /nologo /Fo<OBJECT> /Fd<TARGET_COMPILE_PDB> /FS /c <SOURCE>")
+    
+set(CMAKE_CXX_COMPILE_OBJECT 
+    "\"${CMAKE_COMMAND}\" -E cmake_cl_compile_depends --dep-file=<OBJECT>.d --working-dir=<CMAKE_CURRENT_BINARY_DIR> --filter-prefix=\"\" -- \"<CMAKE_CXX_COMPILER>\" <DEFINES> <INCLUDES> /nologo /TP /Fo<OBJECT> /Fd<TARGET_COMPILE_PDB> /FS /c <SOURCE>")
+
+# Remove pthread flags which are not compatible with MSVC
+set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS})
+string(REPLACE "-pthread" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+string(REPLACE "-pthread" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+
+# Avoid using unsupported compiler options
+set(CMAKE_CXX_FLAGS_INIT "")
+set(CMAKE_C_FLAGS_INIT "")
 
 # Set root paths for find operations
 set(CMAKE_FIND_ROOT_PATH 
@@ -89,9 +110,15 @@ set(CMAKE_STATIC_LIBRARY_SUFFIX ".lib")
 set(CMAKE_IMPORT_LIBRARY_PREFIX "")
 set(CMAKE_IMPORT_LIBRARY_SUFFIX ".lib")
 
-# Compiler flags for MSVC
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DWIN32=1 /D_WINDOWS=1 /D_WIN32=1 /D_WIN64=1 /DWIN64=1 /DJUCE_WINDOWS=1 /DJUCE_WASAPI=1 /DJUCE_DIRECTSOUND=1 /EHsc /MP")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /DWIN32=1 /D_WINDOWS=1 /D_WIN32=1 /D_WIN64=1 /DWIN64=1 /DJUCE_WINDOWS=1 /DJUCE_WASAPI=1 /DJUCE_DIRECTSOUND=1 /MP")
+# Compiler flags for MSVC (simplified to avoid flag pollution)
+set(CMAKE_CXX_FLAGS "/DWIN32=1 /D_WINDOWS=1 /D_WIN32=1 /D_WIN64=1 /DWIN64=1 /DJUCE_WINDOWS=1 /DJUCE_WASAPI=1 /DJUCE_DIRECTSOUND=1 /EHsc /MP /W4 /bigobj")
+set(CMAKE_C_FLAGS "/DWIN32=1 /D_WINDOWS=1 /D_WIN32=1 /D_WIN64=1 /DWIN64=1 /DJUCE_WINDOWS=1 /DJUCE_WASAPI=1 /DJUCE_DIRECTSOUND=1 /MP /W4 /bigobj")
+
+# Disable Linux-specific linker flags
+set(CMAKE_SHARED_LIBRARY_RUNTIME_C_FLAG "")
+set(CMAKE_SHARED_LIBRARY_RUNTIME_C_FLAG_SEP "")
+set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
+set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
 
 # Set the runtime library
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
