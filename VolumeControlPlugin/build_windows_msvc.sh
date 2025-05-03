@@ -178,6 +178,10 @@ run_cmake_config() {
     
     cd "$BUILD_DIR"
     
+    # Clean any previous failed builds
+    info "Cleaning previous build artifacts..."
+    rm -rf CMakeCache.txt CMakeFiles cmake_install.cmake
+    
     cmake_command=(
         cmake
         -DCMAKE_TOOLCHAIN_FILE="../msvc-toolchain.cmake"
@@ -185,6 +189,7 @@ run_cmake_config() {
         -DJUCE_WINDOWS=TRUE
         -DJUCE_DIR="$JUCE_DIR"
         -DCMAKE_VERBOSE_MAKEFILE=ON
+        -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY
         ..
     )
     
