@@ -7,7 +7,7 @@ This document outlines the recommended approaches for building the VolumeControl
 Here are the recommended approaches for building Windows VST3 plugins, in order of reliability:
 
 1. **Native Windows Build with Visual Studio** (Recommended) - Building directly on Windows using Visual Studio and CMake
-2. **MSVC Cross-Compilation from WSL** - Using Microsoft's Visual C++ compiler from WSL
+2. **MSVC Cross-Compilation from WSL** - Using Microsoft's Visual C++ compiler from WSL (including VS2019 Community support)
 3. **Docker-based Build Environment** - Using a containerized Windows build environment 
 
 **IMPORTANT NOTE**: The MinGW-based cross-compilation approach is not included as an option because JUCE does not support MinGW and it will not work reliably for building Windows plugins.
@@ -114,10 +114,41 @@ This approach allows you to use Microsoft's Visual C++ compiler (which is offici
    ```
 
 6. **Set up environment variables to locate MSVC**:
+   
+   **Option 1: Use the helper script for VS2019 Community** (Recommended):
+   ```bash
+   # Make the script executable
+   chmod +x set_msvc_paths.sh
+   
+   # Run the script
+   ./set_msvc_paths.sh
+   ```
+   
+   **Option 2: Manual setup**:
+   
+   For Visual Studio 2019 Community:
+   ```bash
+   # First locate your MSVC version directory (example: 14.29.30133)
+   ls "/mnt/c/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/"
+   
+   # Set the environment variables with your actual version number
+   export MSVC_BASE_PATH="/mnt/c/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133"
+   export WINDOWS_KITS_BASE_PATH="/mnt/c/Program Files (x86)/Windows Kits/10"
+   
+   # Save to .bashrc for persistence
+   echo "export MSVC_BASE_PATH=\"$MSVC_BASE_PATH\"" >> ~/.bashrc
+   echo "export WINDOWS_KITS_BASE_PATH=\"$WINDOWS_KITS_BASE_PATH\"" >> ~/.bashrc
+   ```
+   
+   For Visual Studio 2022 editions:
    ```bash
    # Find your MSVC and Windows SDK paths and adjust these paths accordingly
    export MSVC_BASE_PATH="/mnt/c/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.30.30705"
    export WINDOWS_KITS_BASE_PATH="/mnt/c/Program Files (x86)/Windows Kits/10"
+   
+   # Save to .bashrc for persistence
+   echo "export MSVC_BASE_PATH=\"$MSVC_BASE_PATH\"" >> ~/.bashrc
+   echo "export WINDOWS_KITS_BASE_PATH=\"$WINDOWS_KITS_BASE_PATH\"" >> ~/.bashrc
    ```
 
 7. **Make the build script executable**:
@@ -230,13 +261,29 @@ This approach uses Docker to create a consistent build environment with all nece
 **Issue**: "MSVC compiler not found" or similar errors
 **Solution**: 
 
-1. Double-check Visual Studio installation paths
-2. Ensure environment variables are correctly set:
+1. **For Visual Studio 2019 Community Edition users**:
+   - Use the included helper script to automatically set up paths:
    ```bash
-   export MSVC_BASE_PATH="/mnt/c/Program Files/..."
-   export WINDOWS_KITS_BASE_PATH="/mnt/c/Program Files (x86)/..."
+   chmod +x set_msvc_paths.sh
+   ./set_msvc_paths.sh
    ```
-3. Verify WSL can access Windows directories properly
+   - This script will automatically detect your MSVC version and set it properly
+
+2. **For manual path setup**:
+   - The MSVC_BASE_PATH must point to the specific version folder, not just the VC folder
+   - For example: `/mnt/c/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133`
+   - Be sure to look inside your `/mnt/c/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/` directory to find the exact version number
+
+3. **Verify your paths**:
+   - Confirm the cl.exe compiler exists in your path: 
+   ```bash
+   ls "$MSVC_BASE_PATH/bin/Hostx64/x64/cl.exe"
+   ```
+   - If the file exists, your MSVC path is correct
+
+4. **Verify WSL can access Windows directories properly**:
+   - Make sure you're running in a proper WSL shell (not just VS Code's terminal emulation)
+   - Ensure you have access to `/mnt/c` and can navigate to your Windows files
 
 ### CMake Configuration Errors
 
