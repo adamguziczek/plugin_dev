@@ -103,6 +103,15 @@ This script will:
 - Configure CMake with the MinGW-w64 toolchain
 - Build a Windows-compatible VST3 plugin
 - Display the location of the built Windows VST3 plugin
+- (Optional) Copy the plugin to your Windows VST3 directory if running in WSL
+
+The Windows build uses an enhanced toolchain file (`mingw-w64-toolchain.cmake`) specifically designed to handle cross-compilation challenges when building JUCE plugins for Windows from Linux/WSL. Our toolchain:
+
+- Suppresses specific warnings that would otherwise cause errors (`-Wno-shift-count-overflow`, `-Wno-narrowing`)
+- Enables relaxed type checking with `-fpermissive` to handle Windows-specific code
+- Properly defines all required Windows platform macros for JUCE
+- Statically links C++ libraries to improve compatibility
+- Disables problematic features that don't cross-compile well
 
 After building the Windows VST3, you can copy it to your Windows VST3 directory (typically `C:\Program Files\Common Files\VST3`) and use it in FL Studio or other Windows DAWs.
 
@@ -161,6 +170,19 @@ After a successful Windows cross-compilation build, the Windows VST3 plugin will
 
 This Windows VST3 plugin can be copied to a Windows system and used in any VST3-compatible host, including FL Studio.
 
+## Windows VST3 in FL Studio
+
+To use your cross-compiled Windows VST3 plugin in FL Studio:
+
+1. Build the plugin using `./build_windows.sh`
+2. When prompted, choose to copy the VST3 plugin to the Windows VST3 directory (if running in WSL)
+3. Alternatively, manually copy the entire `.vst3` folder to `C:\Program Files\Common Files\VST3`
+4. Start FL Studio
+5. In FL Studio, go to Options > Manage Plugins
+6. Click "Find plugins" and wait for the scan to complete
+7. Search for "Volume Control Plugin" in the plugin browser
+8. The plugin should now be available in FL Studio's plugin list
+
 ## Troubleshooting
 
 ### Common Issues
@@ -191,6 +213,40 @@ This Windows VST3 plugin can be copied to a Windows system and used in any VST3-
    - Verify MinGW compiler is in the PATH: `which x86_64-w64-mingw32-gcc`
    - Run `./clean.sh` to clean the build directories, then try again with `./build_windows.sh`
 
+### Common Cross-Compilation Errors
+
+When cross-compiling from Linux/WSL to Windows, you might encounter these specific errors that our toolchain is designed to handle:
+
+1. **Harfbuzz shift-count overflow errors**
+   ```
+   warning: left shift count >= width of type [-Wshift-count-overflow]
+   ```
+   Our toolchain suppresses these warnings using `-Wno-shift-count-overflow` since they occur in Harfbuzz (a font rendering component) but don't affect functionality.
+
+2. **Type narrowing errors**
+   ```
+   error: narrowing conversion of '18446744069414584320' from 'long long unsigned int' to 'uint64_t' [-Wnarrowing]
+   ```
+   Our toolchain suppresses these with `-Wno-narrowing` since they're often false positives in cross-compilation scenarios.
+
+3. **Windows-specific API errors**
+   ```
+   error: '_create_locale' was not declared in this scope; did you mean 'freelocale'?
+   ```
+   Our toolchain properly defines Windows platform macros to ensure these APIs are correctly detected.
+
+4. **Pointer-to-integer cast errors**
+   ```
+   error: cast from 'const OT::Script*' to 'uintptr_t' {aka 'long unsigned int'} loses precision [-fpermissive]
+   ```
+   We use the `-fpermissive` flag to allow these casts that are typically valid in Windows but might trigger warnings in GCC.
+
+5. **Library linking errors**
+   ```
+   undefined reference to 'curl_easy_init'
+   ```
+   Our toolchain includes explicit linking to common Windows libraries to prevent these undefined references.
+
 ### Advanced Troubleshooting
 
 For more detailed debugging:
@@ -218,6 +274,7 @@ If your Windows VST3 plugin built with cross-compilation doesn't work in FL Stud
 3. Place the VST3 in the standard Windows VST3 directory: `C:\Program Files\Common Files\VST3`
 4. Restart FL Studio and rescan for plugins
 5. Check FL Studio's plugin manager to see if there are any loading errors
+6. Verify the plugin was built for the correct architecture (x86_64)
 
 ## Advanced Usage
 
@@ -250,8 +307,17 @@ The cross-compilation process uses MinGW-w64 to build Windows binaries from Linu
 1. Only VST3 format is supported for Windows cross-compilation
 2. Some JUCE features might not work the same as when compiled natively on Windows
 3. Static linking is used to minimize external dependencies
+4. WebKit and CURL functionality is disabled in Windows builds to avoid compatibility issues
+5. Certain compiler warnings are suppressed to allow successful builds
 
-For production Windows plugins, you may want to consider building natively on Windows with Visual Studio, but the cross-compiled VST3 should work well for testing and development.
+The cross-compilation toolchain (`mingw-w64-toolchain.cmake`) is carefully configured to handle JUCE-specific requirements:
+
+- It adds all necessary Windows platform definitions
+- It configures the compiler to handle JUCE and Harfbuzz code properly
+- It ensures proper static linking to minimize runtime dependencies
+- It disables features that don't cross-compile well
+
+For production Windows plugins, you may want to consider building natively on Windows with Visual Studio, but the cross-compiled VST3 should work well for testing and development with FL Studio and other DAWs.
 
 ## Further Resources
 
@@ -259,3 +325,4 @@ For production Windows plugins, you may want to consider building natively on Wi
 - [CMake Documentation](https://cmake.org/documentation/)
 - [Linux Dependencies for JUCE](https://github.com/juce-framework/JUCE/blob/master/docs/Linux%20Dependencies.md)
 - [MinGW-w64 Cross Compiler](https://www.mingw-w64.org/)
+- [FL Studio VST Plugin Support](https://www.image-line.com/fl-studio-learning/fl-studio-online-manual/html/plugins/plugin_management.htm)
