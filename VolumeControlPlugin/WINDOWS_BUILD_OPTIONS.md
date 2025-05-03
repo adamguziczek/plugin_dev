@@ -1,4 +1,4 @@
-# Windows Build Options for VolumeControlPlugin
+# Windows Build Options for VolumeControlPlugin (Updated)
 
 This document outlines the recommended approaches for building the VolumeControlPlugin for Windows platforms, with detailed instructions for each method. The JUCE framework **only officially supports Microsoft's Visual C++ compiler for Windows builds**.
 
