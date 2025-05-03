@@ -56,6 +56,13 @@ install_dependencies_debian() {
         "libx11-dev"            # X11 for JUCE GUI apps
     )
     
+    # Windows cross-compilation dependencies (optional)
+    WINDOWS_DEPS=(
+        "mingw-w64"             # MinGW-w64 cross-compiler for building Windows plugins
+        "binutils-mingw-w64"    # Binutils for MinGW
+        "g++-mingw-w64"         # G++ for MinGW
+    )
+    
     # Check if any dependencies are already installed
     info "Checking which dependencies need to be installed..."
     DEPS_TO_INSTALL=()
@@ -163,12 +170,56 @@ install_dependencies() {
     fi
 }
 
+# Install Windows cross-compilation dependencies
+install_windows_cross_deps() {
+    info "Setting up Windows cross-compilation environment..."
+    
+    # Check if MinGW is already installed
+    if dpkg -l | grep -q "^ii  mingw-w64 "; then
+        success "MinGW-w64 is already installed."
+    else
+        warning "MinGW-w64 cross-compiler is not installed."
+        echo -e "${YELLOW}This is required for building Windows VST3 plugins from WSL.${NC}"
+        read -p "Do you want to install Windows cross-compilation tools? (y/n): " install_mingw
+        
+        if [[ $install_mingw != [yY]* ]]; then
+            info "Skipping Windows cross-compilation setup."
+            echo "You can install it later with: sudo apt-get install mingw-w64 binutils-mingw-w64 g++-mingw-w64"
+            return 0
+        fi
+        
+        info "Installing MinGW-w64 and related tools..."
+        if sudo apt-get update && sudo apt-get install -y "${WINDOWS_DEPS[@]}"; then
+            success "Windows cross-compilation tools installed successfully!"
+        else
+            error "Failed to install Windows cross-compilation tools."
+            echo "Please try installing them manually using:"
+            echo "sudo apt-get install ${WINDOWS_DEPS[*]}"
+            return 1
+        fi
+    fi
+    
+    # Verify MinGW installation
+    if command -v x86_64-w64-mingw32-gcc &> /dev/null; then
+        local mingw_version=$(x86_64-w64-mingw32-gcc --version | head -n 1)
+        success "MinGW-w64 is properly installed: $mingw_version"
+    else
+        warning "MinGW-w64 seems to be installed but the compiler is not in the PATH."
+        echo "Please check your installation."
+    fi
+    
+    info "Cross-compilation environment is now set up."
+    echo "You can build Windows VST3 plugins using: ./build_windows.sh"
+    
+    return 0
+}
+
 # Make scripts executable
 make_scripts_executable() {
     info "Making build scripts executable..."
     
     # List of scripts to make executable
-    SCRIPTS=("build.sh" "build_release.sh" "clean.sh" "setup_scripts.sh")
+    SCRIPTS=("build.sh" "build_release.sh" "build_windows.sh" "clean.sh" "setup_scripts.sh")
     
     for script in "${SCRIPTS[@]}"; do
         if [ -f "$script" ]; then
@@ -204,8 +255,24 @@ main() {
         echo "You can run this script again later if you encounter missing dependencies."
     fi
     
+    # Ask if user wants to set up Windows cross-compilation
+    echo -e "\nWould you like to set up Windows cross-compilation for building Windows VST3 plugins?"
+    echo "This allows creating VST3 plugins that work in FL Studio and other Windows DAWs."
+    read -p "Set up Windows cross-compilation? [y/N]: " setup_windows
+    
+    if [[ $setup_windows == [yY]* ]]; then
+        install_windows_cross_deps
+    else
+        info "Skipping Windows cross-compilation setup."
+        echo "You can run this script again later to set up Windows cross-compilation."
+    fi
+    
     echo -e "\n${GREEN}Setup completed!${NC}"
-    echo -e "You can now run ./build.sh to build the plugin."
+    echo -e "You can now run:"
+    echo "  - ./build.sh to build the Linux plugin"
+    if command -v x86_64-w64-mingw32-gcc &> /dev/null; then
+        echo "  - ./build_windows.sh to build the Windows VST3 plugin for FL Studio"
+    fi
 }
 
 # Run the main function
