@@ -24,21 +24,36 @@ A simple volume control audio plugin built with the JUCE framework. This plugin 
 - C++ compiler with C++17 support
 - JUCE framework (included as a subdirectory)
 
+#### Linux/WSL Dependencies
+
+When building on Linux or WSL (Windows Subsystem for Linux), additional system dependencies are required. The `setup_scripts.sh` script can automatically install these dependencies on Debian/Ubuntu-based systems:
+
+```bash
+# Make the setup script executable
+chmod +x setup_scripts.sh
+
+# Run the script and follow the prompts
+./setup_scripts.sh
+```
+
+See [README_BUILD.md](./README_BUILD.md) for detailed information about required dependencies.
+
 ### Build Steps
 
 1. Make sure you have the JUCE framework in the parent directory of this project
-2. Create a build directory:
+2. Run the setup script to prepare for building:
    ```
-   mkdir build
-   cd build
+   chmod +x setup_scripts.sh
+   ./setup_scripts.sh
    ```
-3. Run CMake:
+3. Build the plugin using the build script:
    ```
-   cmake ..
+   ./build.sh
    ```
-4. Build the plugin:
+
+For a release (optimized) build:
    ```
-   cmake --build .
+   ./build_release.sh
    ```
 
 The built plugins will be available in the `build` directory under their respective format folders.
@@ -59,3 +74,9 @@ This plugin demonstrates basic audio plugin development with JUCE, including:
 - State saving/loading
 
 Feel free to use this as a starting point for your own audio plugin projects.
+
+## Detailed Documentation
+
+For more detailed build instructions, dependency information, and troubleshooting:
+
+- [README_BUILD.md](./README_BUILD.md) - Comprehensive build instructions
