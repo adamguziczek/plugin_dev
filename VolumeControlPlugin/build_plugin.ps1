@@ -53,7 +53,8 @@ function Check-Prerequisites {
         Write-Error "Visual Studio 2019 not found at $VsPath"
         Write-Host "Please install Visual Studio 2019 with C++ workload" -ForegroundColor Yellow
         exit 1
-    } else {
+    } 
+    else {
         Write-Host "✓ Visual Studio 2019 found" -ForegroundColor Green
     }
     
@@ -61,7 +62,8 @@ function Check-Prerequisites {
     try {
         $CMakeVersion = (cmake --version) | Select-Object -First 1
         Write-Host "✓ $CMakeVersion" -ForegroundColor Green
-    } catch {
+    } 
+    catch {
         Write-Error "CMake not found. Please install CMake and add it to your PATH"
         Write-Host "Download from: https://cmake.org/download/" -ForegroundColor Yellow
         exit 1
@@ -72,7 +74,8 @@ function Check-Prerequisites {
         Write-Error "JUCE not found at expected location: $JuceDir"
         Write-Host "Please make sure JUCE is at the correct location or update the script's JuceDir variable" -ForegroundColor Yellow
         exit 1
-    } else {
+    } 
+    else {
         Write-Host "✓ JUCE found at $JuceDir" -ForegroundColor Green
     }
     
@@ -86,7 +89,8 @@ function Create-BuildDirectory {
     if (Test-Path $BuildDir) {
         Write-Host "Build directory already exists. Cleaning previous build artifacts..." -ForegroundColor Yellow
         Remove-Item -Path "$BuildDir\*" -Recurse -Force -ErrorAction SilentlyContinue
-    } else {
+    } 
+    else {
         New-Item -Path $BuildDir -ItemType Directory -Force | Out-Null
     }
     
@@ -117,14 +121,15 @@ function Run-CMake {
         }
         
         Write-Success "CMake configuration completed successfully!"
-    } finally {
+    } 
+    finally {
         Pop-Location
     }
 }
 
 # Build the project
 function Build-Project {
-    Write-Step "Building the project ($BuildType configuration)..."
+    Write-Step "Building the project - $BuildType configuration..."
     
     Push-Location $BuildDir
     
@@ -138,7 +143,8 @@ function Build-Project {
         }
         
         Write-Success "Build completed successfully!"
-    } finally {
+    } 
+    finally {
         Pop-Location
     }
 }
@@ -166,7 +172,8 @@ function Copy-ToVstDirectory {
     try {
         Copy-Item -Path $PluginDir -Destination $VstDirectory -Recurse -Force
         Write-Success "Plugin copied to $VstDirectory"
-    } catch {
+    } 
+    catch {
         Write-Error "Failed to copy plugin to VST3 directory: $_"
         Write-Host "You may need to run this script as Administrator to copy to Program Files" -ForegroundColor Yellow
     }
@@ -181,13 +188,15 @@ function Show-BuildResults {
     
     if (Test-Path $PluginPath) {
         Write-Success "VST3 Plugin: $PluginPath"
-    } else {
+    } 
+    else {
         Write-Error "VST3 Plugin not found! Build may have failed."
     }
     
     if (Test-Path $StandalonePath) {
         Write-Success "Standalone App: $StandalonePath"
-    } else {
+    } 
+    else {
         Write-Error "Standalone application not found! Build may have failed."
     }
     
@@ -215,7 +224,8 @@ function Main {
         $Duration = ($EndTime - $StartTime).TotalSeconds
         
         Write-Title "Build Completed Successfully in $([Math]::Round($Duration, 2)) seconds"
-    } catch {
+    } 
+    catch {
         Write-Error "Build failed: $_"
         exit 1
     }
