@@ -6,6 +6,11 @@
 set(CMAKE_SYSTEM_NAME Windows)
 set(CMAKE_SYSTEM_PROCESSOR x86_64)
 
+# Override JUCE architecture detection
+# This prevents the need for runtime architecture detection that fails in cross-compilation
+set(JUCE_TARGET_ARCHITECTURE "x64" CACHE STRING "Target architecture for JUCE" FORCE)
+set(JUCE_WINDOWS TRUE CACHE BOOL "Building for Windows" FORCE)
+
 # Path translation functions for WSL to Windows paths
 # Function to convert a WSL path to a Windows path
 function(wsl_to_windows_path wsl_path out_var)
@@ -123,8 +128,12 @@ endif()
 # Disable features that might not work well in cross-compilation
 set(JUCE_BUILD_MISC_UTILITIES OFF CACHE BOOL "")
 
-# Enable JUCE support
+# Disable runtime arch detection which fails during cross-compilation
+set(JUCE_DISABLE_RUNTIME_ARCH_DETECTION ON CACHE BOOL "Disable runtime architecture detection" FORCE)
+
+# Enable JUCE support with explicit architecture settings
 set(JUCE_WINDOWS ON CACHE BOOL "")
+set(VST3_ARCHITECTURE "x86_64" CACHE STRING "VST3 architecture" FORCE)
 
 # Workaround for WSL path issues in cross-compilation
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
