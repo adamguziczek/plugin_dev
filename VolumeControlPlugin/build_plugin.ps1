@@ -55,7 +55,7 @@ Write-ColorText "=============================================" "Cyan"
 Write-ColorText "Building in $BuildType configuration" "Cyan"
 
 # Step 1: Check prerequisites
-Write-Step "Checking prerequisites..."
+Write-Step "Checking prerequisites"
 
 # Check Visual Studio
 $vsFound = $false
@@ -75,9 +75,9 @@ elseif (Test-Path "C:\Program Files (x86)\Microsoft Visual Studio\2019") {
     Write-Success "Visual Studio 2019 found"
 }
 else {
-    Write-Error "Visual Studio 2019 or 2022 not found!"
-    Write-ColorText "Please install Visual Studio with 'Desktop development with C++' workload."
-    Write-ColorText "Download from: https://visualstudio.microsoft.com/downloads/"
+    Write-Error "Visual Studio 2019 or 2022 not found"
+    Write-ColorText "Please install Visual Studio with 'Desktop development with C++' workload" "White"
+    Write-ColorText "Download from: https://visualstudio.microsoft.com/downloads/" "White"
     exit 1
 }
 
@@ -87,24 +87,24 @@ try {
     Write-Success "$cmakeVersion"
 }
 catch {
-    Write-Error "CMake not found!"
-    Write-ColorText "Please install CMake 3.15 or higher."
-    Write-ColorText "Download from: https://cmake.org/download/"
+    Write-Error "CMake not found"
+    Write-ColorText "Please install CMake 3.15 or higher" "White"
+    Write-ColorText "Download from: https://cmake.org/download/" "White"
     exit 1
 }
 
 # Check JUCE
 if (-not (Test-Path $JuceDir)) {
     Write-Error "JUCE not found at $JuceDir"
-    Write-ColorText "Please make sure the JUCE framework is in the parent directory of this project."
-    Write-ColorText "Clone it with: git clone https://github.com/juce-framework/JUCE.git"
+    Write-ColorText "Please make sure the JUCE framework is in the parent directory of this project" "White"
+    Write-ColorText "Clone it with: git clone https://github.com/juce-framework/JUCE.git" "White"
     exit 1
 }
 Write-Success "JUCE found at $JuceDir"
-Write-Success "All prerequisites satisfied!"
+Write-Success "All prerequisites satisfied"
 
 # Step 2: Create build directory
-Write-Step "Creating build directory..."
+Write-Step "Creating build directory"
 if (Test-Path $BuildDir) {
     Write-ColorText "Cleaning previous build artifacts..." "Gray"
     Remove-Item -Path "$BuildDir\*" -Recurse -Force -ErrorAction SilentlyContinue
@@ -115,13 +115,13 @@ else {
 Write-Success "Build directory ready at $BuildDir"
 
 # Step 3: Run CMake
-Write-Step "Running CMake configuration..."
+Write-Step "Running CMake configuration"
 Push-Location $BuildDir
 
 # Create the CMake arguments array
-$cmakeConfigArgs = @(
+$cmakeArgs = @(
     "-G",
-    """$vsGenerator""",
+    "`"$vsGenerator`"",
     "-A",
     "x64",
     "-DCMAKE_BUILD_TYPE=$BuildType",
@@ -133,18 +133,17 @@ Write-ColorText "Running: cmake with Visual Studio generator" "Gray"
 
 try {
     # Run CMake configure
-    & cmake @cmakeConfigArgs
+    & cmake @cmakeArgs
     
     if ($LASTEXITCODE -ne 0) {
         Write-Error "CMake configuration failed with exit code $LASTEXITCODE"
         Pop-Location
         exit 1
     }
-    Write-Success "CMake configuration completed successfully!"
+    Write-Success "CMake configuration completed successfully"
 }
 catch {
-    $ErrorMsg = $_.Exception.Message
-    Write-Error "CMake failed: $ErrorMsg"
+    Write-Error "CMake failed: $_"
     Pop-Location
     exit 1
 }
@@ -153,7 +152,7 @@ catch {
 Write-Step "Building project ($BuildType)"
 
 # Create the build arguments array
-$cmakeBuildArgs = @(
+$buildArgs = @(
     "--build",
     ".",
     "--config",
@@ -164,55 +163,54 @@ Write-ColorText "Running: cmake --build . --config $BuildType" "Gray"
 
 try {
     # Run CMake build
-    & cmake @cmakeBuildArgs
+    & cmake @buildArgs
     
     if ($LASTEXITCODE -ne 0) {
         Write-Error "Build failed with exit code $LASTEXITCODE"
         Pop-Location
         exit 1
     }
-    Write-Success "Build completed successfully!"
+    Write-Success "Build completed successfully"
 }
 catch {
-    $ErrorMsg = $_.Exception.Message
-    Write-Error "Build failed: $ErrorMsg"
+    Write-Error "Build failed: $_"
     Pop-Location
     exit 1
 }
 Pop-Location
 
 # Step 5: Show results
-Write-Step "Build Results:"
+Write-Step "Build Results"
 $PluginPath = Join-Path $BuildDir "VolumeControlPlugin_artefacts\$BuildType\VST3\VolumeControlPlugin.vst3"
 $StandalonePath = Join-Path $BuildDir "VolumeControlPlugin_artefacts\$BuildType\Standalone\VolumeControlPlugin.exe"
 
 if (Test-Path $PluginPath) {
-    Write-Success "VST3 Plugin built successfully!"
+    Write-Success "VST3 Plugin built successfully"
     Write-ColorText "Location: $PluginPath" "White"
 }
 else {
-    Write-Error "VST3 Plugin not found at expected location. Build may have failed."
+    Write-Error "VST3 Plugin not found at expected location. Build may have failed"
 }
 
 if (Test-Path $StandalonePath) {
-    Write-Success "Standalone App built successfully!"
+    Write-Success "Standalone App built successfully"
     Write-ColorText "Location: $StandalonePath" "White"
 }
 else {
-    Write-Error "Standalone application not found at expected location. Build may have failed."
+    Write-Error "Standalone application not found at expected location. Build may have failed"
 }
 
 # Step 6: Installation instructions
-Write-Step "Installation Instructions:"
+Write-Step "Installation Instructions"
 Write-ColorText "To load the plugin in your DAW:" "White"
 Write-ColorText "1. Copy the .vst3 folder to your VST3 directory:" "White"
 Write-ColorText "   C:\Program Files\Common Files\VST3" "Gray"
 Write-ColorText "2. Rescan for plugins in your DAW" "White"
 Write-ColorText "3. Look for 'Volume Control Plugin' in the effects list" "White"
-Write-ColorText ""
+Write-ColorText "" "White"
 Write-ColorText "To test the plugin without a DAW, run the standalone application:" "White"
 Write-ColorText "   $StandalonePath" "Gray"
 
 Write-ColorText "`n=============================================" "Cyan"
-Write-ColorText " Build Completed Successfully!" "Cyan"
+Write-ColorText " Build Completed Successfully" "Cyan"
 Write-ColorText "=============================================" "Cyan"
