@@ -20,6 +20,29 @@ Write-Host "This script will build the VST3 plugin and standalone application"
 Write-Host "Current execution policy: $(Get-ExecutionPolicy)"
 Write-Host ""
 
+# Check if running from WSL path
+$currentPath = Get-Location
+$isWslPath = $currentPath -like "\\wsl.localhost\*" -or $currentPath -like "\\wsl$\*"
+
+if ($isWslPath) {
+    Write-Host "WSL PATH DETECTED: $currentPath" -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "ERROR: Cannot build directly from WSL path." -ForegroundColor Red
+    Write-Host "Windows CMD doesn't support UNC paths as current directories." -ForegroundColor Red
+    Write-Host ""
+    Write-Host "Please use one of these alternatives:" -ForegroundColor Cyan
+    Write-Host "1. Clone the repository to a Windows path (recommended):" -ForegroundColor White
+    Write-Host "   git clone <your-repo-url> C:\Dev\VolumeControlPlugin" -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "2. Use the Linux build instructions with the native Linux scripts:" -ForegroundColor White
+    Write-Host "   See README_BUILD.md for Linux build instructions" -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "3. Copy project files to a Windows path and build from there:" -ForegroundColor White
+    Write-Host "   PowerShell: Copy-Item -Path '\\wsl.localhost\Ubuntu\path\to\VolumeControlPlugin' -Destination 'C:\Temp\VolumeControlPlugin' -Recurse" -ForegroundColor Gray
+    Write-Host ""
+    exit 1
+}
+
 # Function to find Visual Studio installation
 function Find-VisualStudio {
     $vsInstallations = @()
