@@ -12,13 +12,11 @@ $BuildDir = Join-Path $ScriptDir 'build_vs'
 $JuceDir = Join-Path (Split-Path -Parent $ScriptDir) 'JUCE'
 
 # Print header
-Write-Host "`n=============================================" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "=============================================" -ForegroundColor Cyan
 Write-Host " Volume Control Plugin - Windows Build Script " -ForegroundColor Cyan
 Write-Host "=============================================" -ForegroundColor Cyan
 Write-Host "Building in $BuildType configuration" -ForegroundColor Cyan
-
-# Step 1: Check prerequisites
-Write-Host "`n→ Checking prerequisites..." -ForegroundColor Yellow
 
 # Check execution policy
 $policy = Get-ExecutionPolicy -Scope Process
@@ -28,22 +26,27 @@ if ($policy -eq 'Restricted' -or $policy -eq 'AllSigned') {
     Write-Host "Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process" -ForegroundColor Gray
 }
 
+# Step 1: Check prerequisites
+Write-Host ""
+Write-Host "→ Checking prerequisites..." -ForegroundColor Yellow
+
 # Check Visual Studio
 $vsFound = $false
 $vsVersion = ''
+$vsGenerator = ''
 # Try Visual Studio 2022
 if (Test-Path 'C:\Program Files\Microsoft Visual Studio\2022') {
     $vsFound = $true
     $vsVersion = '2022'
     $vsGenerator = 'Visual Studio 17 2022'
-    Write-Host "✓ Visual Studio 2022 found" -ForegroundColor Green
+    Write-Host "Visual Studio 2022 found" -ForegroundColor Green
 }
 # Try Visual Studio 2019 if 2022 wasn't found
 elseif (Test-Path 'C:\Program Files (x86)\Microsoft Visual Studio\2019') {
     $vsFound = $true
     $vsVersion = '2019'
     $vsGenerator = 'Visual Studio 16 2019'
-    Write-Host "✓ Visual Studio 2019 found" -ForegroundColor Green
+    Write-Host "Visual Studio 2019 found" -ForegroundColor Green
 }
 else {
     Write-Host "ERROR: Visual Studio 2019 or 2022 not found" -ForegroundColor Red
@@ -55,7 +58,7 @@ else {
 # Check CMake
 try {
     $cmakeVersion = (cmake --version) | Select-Object -First 1
-    Write-Host "✓ $cmakeVersion" -ForegroundColor Green
+    Write-Host "$cmakeVersion" -ForegroundColor Green
 }
 catch {
     Write-Host "ERROR: CMake not found" -ForegroundColor Red
@@ -71,11 +74,12 @@ if (-not (Test-Path $JuceDir)) {
     Write-Host "Clone it with: git clone https://github.com/juce-framework/JUCE.git" -ForegroundColor White
     exit 1
 }
-Write-Host "✓ JUCE found at $JuceDir" -ForegroundColor Green
-Write-Host "✓ All prerequisites satisfied" -ForegroundColor Green
+Write-Host "JUCE found at $JuceDir" -ForegroundColor Green
+Write-Host "All prerequisites satisfied" -ForegroundColor Green
 
 # Step 2: Create build directory
-Write-Host "`n→ Creating build directory..." -ForegroundColor Yellow
+Write-Host ""
+Write-Host "→ Creating build directory..." -ForegroundColor Yellow
 if (Test-Path $BuildDir) {
     Write-Host "Cleaning previous build artifacts..." -ForegroundColor Gray
     Remove-Item -Path "$BuildDir\*" -Recurse -Force -ErrorAction SilentlyContinue
@@ -83,10 +87,11 @@ if (Test-Path $BuildDir) {
 else {
     New-Item -Path $BuildDir -ItemType Directory -Force | Out-Null
 }
-Write-Host "✓ Build directory ready at $BuildDir" -ForegroundColor Green
+Write-Host "Build directory ready at $BuildDir" -ForegroundColor Green
 
 # Step 3: Run CMake
-Write-Host "`n→ Running CMake configuration..." -ForegroundColor Yellow
+Write-Host ""
+Write-Host "→ Running CMake configuration..." -ForegroundColor Yellow
 Push-Location $BuildDir
 
 # Create the CMake arguments array
@@ -111,16 +116,17 @@ try {
         Pop-Location
         exit 1
     }
-    Write-Host "✓ CMake configuration completed successfully" -ForegroundColor Green
+    Write-Host "CMake configuration completed successfully" -ForegroundColor Green
 }
 catch {
-    Write-Host "ERROR: CMake failed: $_" -ForegroundColor Red
+    Write-Host "ERROR: CMake failed" -ForegroundColor Red
     Pop-Location
     exit 1
 }
 
 # Step 4: Build
-Write-Host "`n→ Building project ($BuildType)..." -ForegroundColor Yellow
+Write-Host ""
+Write-Host "→ Building project ($BuildType)..." -ForegroundColor Yellow
 
 # Create the build arguments array
 $buildArgs = @(
@@ -141,22 +147,23 @@ try {
         Pop-Location
         exit 1
     }
-    Write-Host "✓ Build completed successfully" -ForegroundColor Green
+    Write-Host "Build completed successfully" -ForegroundColor Green
 }
 catch {
-    Write-Host "ERROR: Build failed: $_" -ForegroundColor Red
+    Write-Host "ERROR: Build failed" -ForegroundColor Red
     Pop-Location
     exit 1
 }
 Pop-Location
 
 # Step 5: Show results
-Write-Host "`n→ Build Results:" -ForegroundColor Yellow
+Write-Host ""
+Write-Host "→ Build Results:" -ForegroundColor Yellow
 $PluginPath = Join-Path $BuildDir "VolumeControlPlugin_artefacts\$BuildType\VST3\VolumeControlPlugin.vst3"
 $StandalonePath = Join-Path $BuildDir "VolumeControlPlugin_artefacts\$BuildType\Standalone\VolumeControlPlugin.exe"
 
 if (Test-Path $PluginPath) {
-    Write-Host "✓ VST3 Plugin built successfully" -ForegroundColor Green
+    Write-Host "VST3 Plugin built successfully" -ForegroundColor Green
     Write-Host "Location: $PluginPath" -ForegroundColor White
 }
 else {
@@ -164,7 +171,7 @@ else {
 }
 
 if (Test-Path $StandalonePath) {
-    Write-Host "✓ Standalone App built successfully" -ForegroundColor Green
+    Write-Host "Standalone App built successfully" -ForegroundColor Green
     Write-Host "Location: $StandalonePath" -ForegroundColor White
 }
 else {
@@ -172,16 +179,19 @@ else {
 }
 
 # Step 6: Installation instructions
-Write-Host "`n→ Installation Instructions:" -ForegroundColor Yellow
+Write-Host ""
+Write-Host "→ Installation Instructions:" -ForegroundColor Yellow
 Write-Host "To load the plugin in your DAW:" -ForegroundColor White
 Write-Host "1. Copy the .vst3 folder to your VST3 directory:" -ForegroundColor White
 Write-Host "   C:\Program Files\Common Files\VST3" -ForegroundColor Gray
 Write-Host "2. Rescan for plugins in your DAW" -ForegroundColor White
 Write-Host "3. Look for 'Volume Control Plugin' in the effects list" -ForegroundColor White
-Write-Host "" -ForegroundColor White
+Write-Host ""
 Write-Host "To test the plugin without a DAW, run the standalone application:" -ForegroundColor White
-Write-Host "   $StandalonePath" -ForegroundColor Gray
+$standalonePathMessage = "   " + $StandalonePath
+Write-Host $standalonePathMessage -ForegroundColor Gray
 
-Write-Host "`n=============================================" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "=============================================" -ForegroundColor Cyan
 Write-Host " Build Completed Successfully" -ForegroundColor Cyan
 Write-Host "=============================================" -ForegroundColor Cyan
