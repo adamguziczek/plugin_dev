@@ -2,14 +2,40 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Build on Windows",
+            "label": "WSL to Windows Build (Full)",
+            "type": "shell",
+            "command": "powershell.exe -ExecutionPolicy Bypass -File \"$(wslpath -w \"${workspaceFolder}/windows_build_from_wsl.ps1\")\"",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "clear": true
+            },
+            "problemMatcher": ["$msCompile"]
+        },
+        {
+            "label": "WSL to Windows Build (Fast)",
+            "type": "shell",
+            "command": "powershell.exe -ExecutionPolicy Bypass -File \"$(wslpath -w \"${workspaceFolder}/windows_build_from_wsl.ps1\")\" -SkipCopy",
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "clear": true
+            },
+            "problemMatcher": ["$msCompile"]
+        },
+        {
+            "label": "Build on Windows (Direct)",
             "type": "shell",
             "windows": {
                 "command": "cmake -G \"Visual Studio 16 2019\" -A x64 -B build_vs && cmake --build build_vs --config Release"
             },
             "linux": {
-                // Run Windows commands from WSL
-                "command": "powershell.exe -Command \"cd $(wslpath -w \"${workspaceFolder}\") && cmake -G \\\"Visual Studio 16 2019\\\" -A x64 -B build_vs && cmake --build build_vs --config Release\""
+                "command": "echo \"This task cannot be run from WSL. Use 'WSL to Windows Build' instead.\" && exit 1"
             },
             "group": {
                 "kind": "build",
@@ -28,8 +54,18 @@
                 "command": "if exist build_vs rd /s /q build_vs"
             },
             "linux": {
-                "command": "powershell.exe -Command \"cd $(wslpath -w \"${workspaceFolder}\") && if (Test-Path build_vs) { Remove-Item -Recurse -Force build_vs }\""
+                "command": "rm -rf build_vs"
             },
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        },
+        {
+            "label": "Clean Windows Build Directory",
+            "type": "shell",
+            "command": "powershell.exe -ExecutionPolicy Bypass -Command \"if (Test-Path 'C:\\Temp\\VolumeControlPlugin') { cd 'C:\\Temp\\VolumeControlPlugin'; .\\clean.ps1 }\"",
             "group": "build",
             "presentation": {
                 "reveal": "always",
@@ -43,7 +79,7 @@
                 "command": "start \"\" \"${workspaceFolder}\\build_vs\\VolumeControlPlugin.sln\""
             },
             "linux": {
-                "command": "powershell.exe -Command \"cd $(wslpath -w \"${workspaceFolder}\") && start \\\"\\\" \\\"./build_vs/VolumeControlPlugin.sln\\\"\""
+                "command": "powershell.exe -ExecutionPolicy Bypass -Command \"Start-Process 'C:\\Temp\\VolumeControlPlugin\\build_vs\\VolumeControlPlugin.sln'\""
             },
             "group": "build",
             "presentation": {
