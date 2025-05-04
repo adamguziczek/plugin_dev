@@ -145,7 +145,7 @@ $vcToolsVersionPath = if (Test-Path $vcToolsetPath) {
 }
 
 # Explicitly set compiler paths if found
-$clExe = if ($vcToolsVersionPath) {
+$clExePath = if ($vcToolsVersionPath) {
     Join-Path $vcToolsVersionPath "bin\Hostx64\x64\cl.exe"
 } else {
     $null
@@ -171,10 +171,40 @@ if ([string]::IsNullOrEmpty($vcvarsPath)) {
 }
 
 Write-Host "Found vcvarsall.bat at: $vcvarsPath"
-if ($clExe -and (Test-Path $clExe)) {
-    Write-Host "Found MSVC compiler at: $clExe"
+if ($clExePath -and (Test-Path $clExePath)) {
+    Write-Host "Found MSVC compiler at: $clExePath"
 } else {
     Write-Host "WARNING: Could not find MSVC compiler directly. Using vcvarsall.bat environment instead." -ForegroundColor Yellow
+}
+
+# Escape backslashes in paths for CMake
+$escapedClPath = $clExePath -replace '\\', '\\\\'
+if ([string]::IsNullOrEmpty($escapedClPath)) {
+    # Try to run vcvarsall to get compiler path
+    $tempBatch = Join-Path $PWD "temp_find_cl.bat"
+    @"
+@echo off
+call "$vcvarsPath" x64
+where cl.exe > cl_path.txt
+"@ | Out-File -FilePath $tempBatch -Encoding ASCII
+    
+    # Run the batch file
+    Start-Process -FilePath "cmd.exe" -ArgumentList "/c `"$tempBatch`"" -NoNewWindow -Wait -PassThru
+    
+    # Get the compiler path
+    if (Test-Path "cl_path.txt") {
+        $clExePath = Get-Content "cl_path.txt" -First 1
+        $escapedClPath = $clExePath -replace '\\', '\\\\'
+        Remove-Item "cl_path.txt"
+        Write-Host "Found cl.exe through vcvarsall at: $clExePath"
+    } else {
+        Write-Host "WARNING: Could not locate cl.exe even with vcvarsall. Build may fail." -ForegroundColor Red
+    }
+    
+    # Clean up the temp batch file
+    if (Test-Path $tempBatch) {
+        Remove-Item $tempBatch
+    }
 }
 
 # Check for Windows 10 SDK
@@ -238,20 +268,36 @@ Write-Host ""
 
 # Write a CMake toolchain file to help with compiler detection
 $toolchainFilePath = Join-Path $PWD "vs_toolchain.cmake"
+
+if ([string]::IsNullOrEmpty($escapedClPath)) {
+    # Fallback toolchain file with basic settings
+@"
+# VS Toolchain File (Fallback)
+set(CMAKE_SYSTEM_NAME Windows)
+set(CMAKE_SYSTEM_PROCESSOR AMD64)
+set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
+
+# Force Visual Studio generator to use native environment
+set(CMAKE_GENERATOR_TOOLSET "host=x64" CACHE STRING "")
+set(CMAKE_GENERATOR_PLATFORM "x64" CACHE STRING "")
+"@ | Out-File -FilePath $toolchainFilePath -Encoding ASCII
+} else {
+    # Full toolchain file with explicit compiler paths
 @"
 # VS Toolchain File
 set(CMAKE_SYSTEM_NAME Windows)
 set(CMAKE_SYSTEM_PROCESSOR AMD64)
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 
-# Set compiler paths - C compiler
-set(CMAKE_C_COMPILER "cl.exe" CACHE FILEPATH "C compiler")
-set(CMAKE_CXX_COMPILER "cl.exe" CACHE FILEPATH "C++ compiler")
+# Set compiler paths with full paths
+set(CMAKE_C_COMPILER "$escapedClPath" CACHE FILEPATH "C compiler")
+set(CMAKE_CXX_COMPILER "$escapedClPath" CACHE FILEPATH "C++ compiler")
 
 # Force Visual Studio generator to use native environment
 set(CMAKE_GENERATOR_TOOLSET "host=x64" CACHE STRING "")
 set(CMAKE_GENERATOR_PLATFORM "x64" CACHE STRING "")
 "@ | Out-File -FilePath $toolchainFilePath -Encoding ASCII
+}
 
 # Configure with CMake
 Write-Host "===== Configuring with CMake =====" -ForegroundColor Cyan
@@ -261,11 +307,11 @@ $quotedVcvarsPath = "`"$vcvarsPath`""
 Write-Host "Running: cmd.exe with Visual Studio environment and cmake"
 
 try {
-    # Create a batch file with the commands to avoid command line length and quoting issues
-    $batchFile = Join-Path $PWD "temp_cmake_config.bat"
+    # Create a more comprehensive batch file with environment setup and CMake configuration
+    $batchFile = Join-Path $PWD "cmake_config.bat"
     
-    # Enhanced batch file with detailed environment setup and diagnostics
-    @"
+    # Create a more robust batch file that preserves environment variables
+@"
 @echo off
 echo Setting up Visual Studio environment...
 call $quotedVcvarsPath x64
@@ -275,24 +321,32 @@ echo Verifying compiler detection...
 where cl.exe
 if %ERRORLEVEL% NEQ 0 (
     echo ERROR: cl.exe not found in PATH!
+    exit /b 1
 ) else (
     echo C/C++ compiler found.
 )
 
 echo Current directory: %CD%
+if not exist $buildDir mkdir $buildDir
 cd $buildDir
 echo Changed to build directory: %CD%
 
 echo Running CMake configuration...
+rem Set environment variables that help cmake find the compiler
+set CC=cl.exe
+set CXX=cl.exe
+
+rem Run CMake with explicit compiler specification
 cmake -G "$cmakeGenerator" -A x64 -DCMAKE_TOOLCHAIN_FILE=../vs_toolchain.cmake ..
 
 echo CMake configuration completed with exit code: %ERRORLEVEL%
+exit /b %ERRORLEVEL%
 "@ | Out-File -FilePath $batchFile -Encoding ASCII
     
-    # Run the batch file
+    # Run the batch file with full verbosity
     $process = Start-Process -FilePath "cmd.exe" -ArgumentList "/c `"$batchFile`"" -NoNewWindow -Wait -PassThru
     
-    # Clean up the temporary batch file
+    # Clean up the batch file
     if (Test-Path $batchFile) {
         Remove-Item $batchFile
     }
@@ -305,34 +359,37 @@ echo CMake configuration completed with exit code: %ERRORLEVEL%
         Write-Host "Troubleshooting compiler detection:" -ForegroundColor Yellow
         Write-Host "1. Make sure Visual Studio is installed with 'Desktop development with C++' workload" -ForegroundColor White
         Write-Host "2. Try installing/reinstalling the latest Windows 10 SDK from Visual Studio Installer" -ForegroundColor White
-        Write-Host "3. Make sure no antivirus is blocking cl.exe or vcvarsall.bat" -ForegroundColor White
+        Write-Host "3. Make sure no antivirus is blocking cl.exe" -ForegroundColor White
         Write-Host ""
         
-        Write-Host "Let's try a direct CMake configuration as a fallback..." -ForegroundColor Yellow
+        Write-Host "Trying direct CMake execution as a last resort..." -ForegroundColor Yellow
         
-        # Create a simpler fallback batch file
-        $fallbackBatchFile = Join-Path $PWD "fallback_cmake_config.bat"
+        # Create a very simple direct CMake command batch file
+        $directBatchFile = Join-Path $PWD "direct_cmake.bat"
         
-        @"
+@"
 @echo off
 call $quotedVcvarsPath x64
+
 cd $buildDir
+
+rem Run CMake directly without toolchain file
 cmake -G "$cmakeGenerator" -A x64 ..
-"@ | Out-File -FilePath $fallbackBatchFile -Encoding ASCII
+"@ | Out-File -FilePath $directBatchFile -Encoding ASCII
         
-        # Run the fallback batch file
-        $fallbackProcess = Start-Process -FilePath "cmd.exe" -ArgumentList "/c `"$fallbackBatchFile`"" -NoNewWindow -Wait -PassThru
+        # Run the direct batch file
+        $directProcess = Start-Process -FilePath "cmd.exe" -ArgumentList "/c `"$directBatchFile`"" -NoNewWindow -Wait -PassThru
         
-        # Clean up the fallback batch file
-        if (Test-Path $fallbackBatchFile) {
-            Remove-Item $fallbackBatchFile
+        # Clean up the direct batch file
+        if (Test-Path $directBatchFile) {
+            Remove-Item $directBatchFile
         }
         
-        if ($fallbackProcess.ExitCode -ne 0) {
-            Write-Host "ERROR: Fallback CMake configuration also failed." -ForegroundColor Red
+        if ($directProcess.ExitCode -ne 0) {
+            Write-Host "ERROR: All CMake configuration attempts failed." -ForegroundColor Red
             exit 1
         } else {
-            Write-Host "Fallback CMake configuration completed successfully!" -ForegroundColor Green
+            Write-Host "Direct CMake configuration successful!" -ForegroundColor Green
         }
     } else {
         Write-Host "CMake configuration completed successfully" -ForegroundColor Green
@@ -352,20 +409,21 @@ if (Test-Path $toolchainFilePath) {
 Write-Host "===== Building Project ($BuildType Configuration) =====" -ForegroundColor Cyan
 try {
     # Create a batch file for building to avoid command line issues
-    $batchFile = Join-Path $PWD "temp_cmake_build.bat"
+    $batchFile = Join-Path $PWD "cmake_build.bat"
     
-    @"
+@"
 @echo off
 call $quotedVcvarsPath x64
 cd $buildDir
 cmake --build . --config $BuildType
+exit /b %ERRORLEVEL%
 "@ | Out-File -FilePath $batchFile -Encoding ASCII
     
     # Run the batch file
     Write-Host "Running: cmake --build . --config $BuildType"
     $process = Start-Process -FilePath "cmd.exe" -ArgumentList "/c `"$batchFile`"" -NoNewWindow -Wait -PassThru
     
-    # Clean up the temporary batch file
+    # Clean up the batch file
     if (Test-Path $batchFile) {
         Remove-Item $batchFile
     }
