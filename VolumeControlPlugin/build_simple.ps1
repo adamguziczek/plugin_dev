@@ -119,15 +119,36 @@ $vs = $vsInstallations | Sort-Object -Property installationVersion -Descending |
 $vsVersion = $vs.installationVersion.Split('.')[0]
 Write-Host "Visual Studio $vsVersion found at: $($vs.installationPath)"
 
-# Set appropriate generator based on VS version
+# Determine Visual Studio year
 if ($vsVersion -eq "2022") {
     $cmakeGenerator = "Visual Studio 17 2022"
+    $vsYear = "2022"
 } elseif ($vsVersion -eq "2019") {
     $cmakeGenerator = "Visual Studio 16 2019"
+    $vsYear = "2019"
 } elseif ($vsVersion -eq "2017") {
-    $cmakeGenerator = "Visual Studio 15 2017" 
+    $cmakeGenerator = "Visual Studio 15 2017"
+    $vsYear = "2017"
 } else {
     $cmakeGenerator = "Visual Studio 16 2019" # Default fallback
+    $vsYear = "2019"
+}
+
+# Find Visual C++ compiler paths
+$vcToolsetPath = "$($vs.installationPath)\VC\Tools\MSVC"
+$vcToolsVersionPath = if (Test-Path $vcToolsetPath) {
+    # Get latest VC tools version
+    Get-ChildItem -Path $vcToolsetPath -Directory | Sort-Object -Property Name -Descending | Select-Object -First 1 -ExpandProperty FullName
+} else {
+    Write-Host "WARNING: MSVC tools path not found. Using fallback method for compiler detection." -ForegroundColor Yellow
+    $null
+}
+
+# Explicitly set compiler paths if found
+$clExe = if ($vcToolsVersionPath) {
+    Join-Path $vcToolsVersionPath "bin\Hostx64\x64\cl.exe"
+} else {
+    $null
 }
 
 # Find vcvarsall.bat
@@ -150,6 +171,42 @@ if ([string]::IsNullOrEmpty($vcvarsPath)) {
 }
 
 Write-Host "Found vcvarsall.bat at: $vcvarsPath"
+if ($clExe -and (Test-Path $clExe)) {
+    Write-Host "Found MSVC compiler at: $clExe"
+} else {
+    Write-Host "WARNING: Could not find MSVC compiler directly. Using vcvarsall.bat environment instead." -ForegroundColor Yellow
+}
+
+# Check for Windows 10 SDK
+$windowsSdkPath = ""
+$possibleSdkPaths = @(
+    "C:\Program Files (x86)\Windows Kits\10",
+    "C:\Program Files\Windows Kits\10"
+)
+
+foreach ($path in $possibleSdkPaths) {
+    if (Test-Path $path) {
+        $windowsSdkPath = $path
+        break
+    }
+}
+
+if (![string]::IsNullOrEmpty($windowsSdkPath)) {
+    $sdkIncludePath = Join-Path $windowsSdkPath "Include"
+    if (Test-Path $sdkIncludePath) {
+        $sdkVersions = Get-ChildItem -Path $sdkIncludePath -Directory | Sort-Object -Property Name -Descending
+        if ($sdkVersions.Count -gt 0) {
+            $latestSdkVersion = $sdkVersions[0].Name
+            Write-Host "Found Windows 10 SDK version $latestSdkVersion"
+        } else {
+            Write-Host "WARNING: Windows 10 SDK found but no versions detected" -ForegroundColor Yellow
+        }
+    } else {
+        Write-Host "WARNING: Windows 10 SDK found but missing Include directory" -ForegroundColor Yellow
+    }
+} else {
+    Write-Host "WARNING: Windows 10 SDK not found. This may cause compiler detection issues." -ForegroundColor Yellow
+}
 
 # Check for CMake
 try {
@@ -179,6 +236,23 @@ if (!(Test-Path $buildDir)) {
 }
 Write-Host ""
 
+# Write a CMake toolchain file to help with compiler detection
+$toolchainFilePath = Join-Path $PWD "vs_toolchain.cmake"
+@"
+# VS Toolchain File
+set(CMAKE_SYSTEM_NAME Windows)
+set(CMAKE_SYSTEM_PROCESSOR AMD64)
+set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
+
+# Set compiler paths - C compiler
+set(CMAKE_C_COMPILER "cl.exe" CACHE FILEPATH "C compiler")
+set(CMAKE_CXX_COMPILER "cl.exe" CACHE FILEPATH "C++ compiler")
+
+# Force Visual Studio generator to use native environment
+set(CMAKE_GENERATOR_TOOLSET "host=x64" CACHE STRING "")
+set(CMAKE_GENERATOR_PLATFORM "x64" CACHE STRING "")
+"@ | Out-File -FilePath $toolchainFilePath -Encoding ASCII
+
 # Configure with CMake
 Write-Host "===== Configuring with CMake =====" -ForegroundColor Cyan
 
@@ -190,11 +264,29 @@ try {
     # Create a batch file with the commands to avoid command line length and quoting issues
     $batchFile = Join-Path $PWD "temp_cmake_config.bat"
     
+    # Enhanced batch file with detailed environment setup and diagnostics
     @"
 @echo off
+echo Setting up Visual Studio environment...
 call $quotedVcvarsPath x64
+echo Environment setup complete.
+
+echo Verifying compiler detection...
+where cl.exe
+if %ERRORLEVEL% NEQ 0 (
+    echo ERROR: cl.exe not found in PATH!
+) else (
+    echo C/C++ compiler found.
+)
+
+echo Current directory: %CD%
 cd $buildDir
-cmake -G "$cmakeGenerator" -A x64 ..
+echo Changed to build directory: %CD%
+
+echo Running CMake configuration...
+cmake -G "$cmakeGenerator" -A x64 -DCMAKE_TOOLCHAIN_FILE=../vs_toolchain.cmake ..
+
+echo CMake configuration completed with exit code: %ERRORLEVEL%
 "@ | Out-File -FilePath $batchFile -Encoding ASCII
     
     # Run the batch file
@@ -206,15 +298,55 @@ cmake -G "$cmakeGenerator" -A x64 ..
     }
     
     if ($process.ExitCode -ne 0) {
-        Write-Host "ERROR: CMake configuration failed with exit code $($process.ExitCode)" -ForegroundColor Red
-        exit 1
+        Write-Host "CMake configuration failed with exit code $($process.ExitCode)" -ForegroundColor Red
+        
+        # Check for common issues
+        Write-Host ""
+        Write-Host "Troubleshooting compiler detection:" -ForegroundColor Yellow
+        Write-Host "1. Make sure Visual Studio is installed with 'Desktop development with C++' workload" -ForegroundColor White
+        Write-Host "2. Try installing/reinstalling the latest Windows 10 SDK from Visual Studio Installer" -ForegroundColor White
+        Write-Host "3. Make sure no antivirus is blocking cl.exe or vcvarsall.bat" -ForegroundColor White
+        Write-Host ""
+        
+        Write-Host "Let's try a direct CMake configuration as a fallback..." -ForegroundColor Yellow
+        
+        # Create a simpler fallback batch file
+        $fallbackBatchFile = Join-Path $PWD "fallback_cmake_config.bat"
+        
+        @"
+@echo off
+call $quotedVcvarsPath x64
+cd $buildDir
+cmake -G "$cmakeGenerator" -A x64 ..
+"@ | Out-File -FilePath $fallbackBatchFile -Encoding ASCII
+        
+        # Run the fallback batch file
+        $fallbackProcess = Start-Process -FilePath "cmd.exe" -ArgumentList "/c `"$fallbackBatchFile`"" -NoNewWindow -Wait -PassThru
+        
+        # Clean up the fallback batch file
+        if (Test-Path $fallbackBatchFile) {
+            Remove-Item $fallbackBatchFile
+        }
+        
+        if ($fallbackProcess.ExitCode -ne 0) {
+            Write-Host "ERROR: Fallback CMake configuration also failed." -ForegroundColor Red
+            exit 1
+        } else {
+            Write-Host "Fallback CMake configuration completed successfully!" -ForegroundColor Green
+        }
+    } else {
+        Write-Host "CMake configuration completed successfully" -ForegroundColor Green
     }
 } catch {
     Write-Host "ERROR: Failed to configure project with CMake: $_" -ForegroundColor Red
     exit 1
 }
-Write-Host "CMake configuration completed successfully" -ForegroundColor Green
 Write-Host ""
+
+# Clean up toolchain file
+if (Test-Path $toolchainFilePath) {
+    Remove-Item $toolchainFilePath
+}
 
 # Build the project
 Write-Host "===== Building Project ($BuildType Configuration) =====" -ForegroundColor Cyan
