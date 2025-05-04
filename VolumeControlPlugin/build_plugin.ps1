@@ -2,196 +2,210 @@
 # Usage: .\build_plugin.ps1 [Debug|Release]
 # Run with: PowerShell -ExecutionPolicy Bypass -File build_plugin.ps1 [Debug|Release]
 
+# Get build type from command line argument
 param(
-    [string]$BuildType = 'Release'
+    [string]$BuildType = "Release"  # Default to Release if not specified
 )
 
 # Configuration
-$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
-$BuildDir = Join-Path $ScriptDir 'build_vs'
-$JuceDir = Join-Path (Split-Path -Parent $ScriptDir) 'JUCE'
+$ErrorActionPreference = "Stop"   # Stop on first error
+$vsYears = @(2022, 2019, 2017)    # Visual Studio versions to check in order
+$buildDir = "build_vs"            # Build directory name
+$cmakeGenerator = "Visual Studio 16 2019"  # Default generator
 
-# Print header
+# Display header
 Write-Host ""
-Write-Host "=============================================" -ForegroundColor Cyan
-Write-Host " Volume Control Plugin - Windows Build Script " -ForegroundColor Cyan
-Write-Host "=============================================" -ForegroundColor Cyan
-Write-Host "Building in $BuildType configuration" -ForegroundColor Cyan
-
-# Check execution policy
-$policy = Get-ExecutionPolicy -Scope Process
-if ($policy -eq 'Restricted' -or $policy -eq 'AllSigned') {
-    Write-Host "WARNING: PowerShell execution policy is set to $policy" -ForegroundColor Yellow
-    Write-Host "If you receive a policy error, run this command first:" -ForegroundColor Gray
-    Write-Host "Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process" -ForegroundColor Gray
-}
-
-# Step 1: Check prerequisites
+Write-Host "===== VOLUME CONTROL PLUGIN - ADVANCED BUILD SCRIPT =====" -ForegroundColor Cyan
+Write-Host "Building: $BuildType configuration"
+Write-Host "Current execution policy: $(Get-ExecutionPolicy)"
 Write-Host ""
-Write-Host "→ Checking prerequisites..." -ForegroundColor Yellow
 
-# Check Visual Studio
-$vsFound = $false
-$vsVersion = ''
-$vsGenerator = ''
-# Try Visual Studio 2022
-if (Test-Path 'C:\Program Files\Microsoft Visual Studio\2022') {
-    $vsFound = $true
-    $vsVersion = '2022'
-    $vsGenerator = 'Visual Studio 17 2022'
-    Write-Host "Visual Studio 2022 found" -ForegroundColor Green
+# Function to find Visual Studio installation
+function Find-VisualStudio {
+    $vsInstallations = @()
+    
+    # Try to find Visual Studio installations using vswhere if available
+    $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+    if (Test-Path $vswhere) {
+        $vsInstallations = & $vswhere -prerelease -legacy -format json | ConvertFrom-Json
+    }
+    
+    # If vswhere didn't work, try known paths
+    if ($vsInstallations.Count -eq 0) {
+        foreach ($year in $vsYears) {
+            $paths = @(
+                "${env:ProgramFiles(x86)}\Microsoft Visual Studio\$year\Enterprise",
+                "${env:ProgramFiles(x86)}\Microsoft Visual Studio\$year\Professional",
+                "${env:ProgramFiles(x86)}\Microsoft Visual Studio\$year\Community",
+                "${env:ProgramFiles}\Microsoft Visual Studio\$year\Enterprise",
+                "${env:ProgramFiles}\Microsoft Visual Studio\$year\Professional",
+                "${env:ProgramFiles}\Microsoft Visual Studio\$year\Community"
+            )
+            
+            foreach ($path in $paths) {
+                if (Test-Path $path) {
+                    $vsInstallations += [PSCustomObject]@{
+                        installationPath = $path
+                        installationVersion = "$year.0.0.0"
+                    }
+                }
+            }
+        }
+    }
+    
+    return $vsInstallations
 }
-# Try Visual Studio 2019 if 2022 wasn't found
-elseif (Test-Path 'C:\Program Files (x86)\Microsoft Visual Studio\2019') {
-    $vsFound = $true
-    $vsVersion = '2019'
-    $vsGenerator = 'Visual Studio 16 2019'
-    Write-Host "Visual Studio 2019 found" -ForegroundColor Green
-}
-else {
-    Write-Host "ERROR: Visual Studio 2019 or 2022 not found" -ForegroundColor Red
-    Write-Host "Please install Visual Studio with 'Desktop development with C++' workload" -ForegroundColor White
-    Write-Host "Download from: https://visualstudio.microsoft.com/downloads/" -ForegroundColor White
+
+# Validate build type
+if ($BuildType -ne "Debug" -and $BuildType -ne "Release") {
+    Write-Host "ERROR: Invalid build type '$BuildType'. Must be 'Debug' or 'Release'" -ForegroundColor Red
     exit 1
 }
 
-# Check CMake
-try {
-    $cmakeVersion = (cmake --version) | Select-Object -First 1
-    Write-Host "$cmakeVersion" -ForegroundColor Green
-}
-catch {
-    Write-Host "ERROR: CMake not found" -ForegroundColor Red
-    Write-Host "Please install CMake 3.15 or higher" -ForegroundColor White
-    Write-Host "Download from: https://cmake.org/download/" -ForegroundColor White
+# Check prerequisites
+Write-Host "===== Checking Prerequisites =====" -ForegroundColor Cyan
+
+# Check for Visual Studio
+$vsInstallations = Find-VisualStudio
+if ($vsInstallations.Count -eq 0) {
+    Write-Host "ERROR: Visual Studio not found. Please install Visual Studio with C++ workload" -ForegroundColor Red
     exit 1
 }
 
-# Check JUCE
-if (-not (Test-Path $JuceDir)) {
-    Write-Host "ERROR: JUCE not found at $JuceDir" -ForegroundColor Red
-    Write-Host "Please make sure the JUCE framework is in the parent directory of this project" -ForegroundColor White
-    Write-Host "Clone it with: git clone https://github.com/juce-framework/JUCE.git" -ForegroundColor White
-    exit 1
-}
-Write-Host "JUCE found at $JuceDir" -ForegroundColor Green
-Write-Host "All prerequisites satisfied" -ForegroundColor Green
+# Select the newest Visual Studio version
+$vs = $vsInstallations | Sort-Object -Property installationVersion -Descending | Select-Object -First 1
+$vsVersion = $vs.installationVersion.Split('.')[0]
+Write-Host "Visual Studio $vsVersion found at: $($vs.installationPath)"
 
-# Step 2: Create build directory
-Write-Host ""
-Write-Host "→ Creating build directory..." -ForegroundColor Yellow
-if (Test-Path $BuildDir) {
-    Write-Host "Cleaning previous build artifacts..." -ForegroundColor Gray
-    Remove-Item -Path "$BuildDir\*" -Recurse -Force -ErrorAction SilentlyContinue
+# Set appropriate generator based on VS version
+if ($vsVersion -eq "2022") {
+    $cmakeGenerator = "Visual Studio 17 2022"
+} elseif ($vsVersion -eq "2019") {
+    $cmakeGenerator = "Visual Studio 16 2019"
+} elseif ($vsVersion -eq "2017") {
+    $cmakeGenerator = "Visual Studio 15 2017" 
+} else {
+    $cmakeGenerator = "Visual Studio 16 2019" # Default fallback
 }
-else {
-    New-Item -Path $BuildDir -ItemType Directory -Force | Out-Null
-}
-Write-Host "Build directory ready at $BuildDir" -ForegroundColor Green
 
-# Step 3: Run CMake
-Write-Host ""
-Write-Host "→ Running CMake configuration..." -ForegroundColor Yellow
-Push-Location $BuildDir
-
-# Create the CMake arguments array
-$cmakeArgs = @(
-    '-G',
-    "`"$vsGenerator`"",
-    '-A',
-    'x64',
-    "-DCMAKE_BUILD_TYPE=$BuildType",
-    "-DJUCE_DIR=$JuceDir",
-    '..'
+# Find vcvarsall.bat
+$vcvarsPath = ""
+$possiblePaths = @(
+    "$($vs.installationPath)\VC\Auxiliary\Build\vcvarsall.bat",
+    "$($vs.installationPath)\VC\vcvarsall.bat"
 )
 
-Write-Host "Running: cmake with Visual Studio generator" -ForegroundColor Gray
-
-try {
-    # Run CMake configure
-    & cmake @cmakeArgs
-    
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "ERROR: CMake configuration failed with exit code $LASTEXITCODE" -ForegroundColor Red
-        Pop-Location
-        exit 1
+foreach ($path in $possiblePaths) {
+    if (Test-Path $path) {
+        $vcvarsPath = $path
+        break
     }
-    Write-Host "CMake configuration completed successfully" -ForegroundColor Green
 }
-catch {
-    Write-Host "ERROR: CMake failed" -ForegroundColor Red
-    Pop-Location
+
+if ([string]::IsNullOrEmpty($vcvarsPath)) {
+    Write-Host "ERROR: Could not find vcvarsall.bat for Visual Studio" -ForegroundColor Red
     exit 1
 }
 
-# Step 4: Build
-Write-Host ""
-Write-Host "→ Building project ($BuildType)..." -ForegroundColor Yellow
+Write-Host "Found vcvarsall.bat at: $vcvarsPath"
 
-# Create the build arguments array
-$buildArgs = @(
-    '--build',
-    '.',
-    '--config',
-    $BuildType
-)
-
-Write-Host "Running: cmake --build . --config $BuildType" -ForegroundColor Gray
-
+# Check for CMake
 try {
-    # Run CMake build
-    & cmake @buildArgs
-    
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "ERROR: Build failed with exit code $LASTEXITCODE" -ForegroundColor Red
-        Pop-Location
-        exit 1
-    }
-    Write-Host "Build completed successfully" -ForegroundColor Green
-}
-catch {
-    Write-Host "ERROR: Build failed" -ForegroundColor Red
-    Pop-Location
+    $cmakeVersion = (cmake --version | Select-Object -First 1).TrimStart("cmake version ")
+    Write-Host "CMake found: $cmakeVersion"
+} catch {
+    Write-Host "ERROR: CMake not found. Please install CMake and add it to your PATH" -ForegroundColor Red
     exit 1
 }
-Pop-Location
 
-# Step 5: Show results
-Write-Host ""
-Write-Host "→ Build Results:" -ForegroundColor Yellow
-$PluginPath = Join-Path $BuildDir "VolumeControlPlugin_artefacts\$BuildType\VST3\VolumeControlPlugin.vst3"
-$StandalonePath = Join-Path $BuildDir "VolumeControlPlugin_artefacts\$BuildType\Standalone\VolumeControlPlugin.exe"
-
-if (Test-Path $PluginPath) {
-    Write-Host "VST3 Plugin built successfully" -ForegroundColor Green
-    Write-Host "Location: $PluginPath" -ForegroundColor White
+# Check for JUCE
+$juceDir = "..\JUCE"
+if (!(Test-Path $juceDir)) {
+    Write-Host "ERROR: JUCE not found at $juceDir" -ForegroundColor Red
+    exit 1
 }
-else {
-    Write-Host "ERROR: VST3 Plugin not found at expected location. Build may have failed" -ForegroundColor Red
-}
-
-if (Test-Path $StandalonePath) {
-    Write-Host "Standalone App built successfully" -ForegroundColor Green
-    Write-Host "Location: $StandalonePath" -ForegroundColor White
-}
-else {
-    Write-Host "ERROR: Standalone application not found at expected location. Build may have failed" -ForegroundColor Red
-}
-
-# Step 6: Installation instructions
+Write-Host "JUCE found at $juceDir"
 Write-Host ""
-Write-Host "→ Installation Instructions:" -ForegroundColor Yellow
-Write-Host "To load the plugin in your DAW:" -ForegroundColor White
-Write-Host "1. Copy the .vst3 folder to your VST3 directory:" -ForegroundColor White
-Write-Host "   C:\Program Files\Common Files\VST3" -ForegroundColor Gray
-Write-Host "2. Rescan for plugins in your DAW" -ForegroundColor White
-Write-Host "3. Look for 'Volume Control Plugin' in the effects list" -ForegroundColor White
-Write-Host ""
-Write-Host "To test the plugin without a DAW, run the standalone application:" -ForegroundColor White
-$standalonePathMessage = "   " + $StandalonePath
-Write-Host $standalonePathMessage -ForegroundColor Gray
 
+# Create or clean build directory
+Write-Host "===== Preparing Build Directory =====" -ForegroundColor Cyan
+if (!(Test-Path $buildDir)) {
+    New-Item -ItemType Directory -Path $buildDir | Out-Null
+    Write-Host "Created build directory: $buildDir"
+} else {
+    Write-Host "Using existing build directory: $buildDir"
+}
 Write-Host ""
-Write-Host "=============================================" -ForegroundColor Cyan
-Write-Host " Build Completed Successfully" -ForegroundColor Cyan
-Write-Host "=============================================" -ForegroundColor Cyan
+
+# Configure with CMake
+Write-Host "===== Configuring with CMake =====" -ForegroundColor Cyan
+$vcvarsArgs = "x64"
+Write-Host "Running: cmd.exe /c `"$vcvarsPath`" $vcvarsArgs `&`& cmake with $cmakeGenerator"
+
+try {
+    # Run CMake inside a cmd.exe process with Visual Studio environment set up
+    $cmakeConfigureCmd = "cmake -G `"$cmakeGenerator`" -A x64 .."
+    $cmdArgs = "/c `"$vcvarsPath`" $vcvarsArgs & cd $buildDir & $cmakeConfigureCmd"
+    
+    $process = Start-Process -FilePath "cmd.exe" -ArgumentList $cmdArgs -NoNewWindow -Wait -PassThru -RedirectStandardOutput "cmake_configure_output.log" -RedirectStandardError "cmake_configure_error.log"
+    
+    if ($process.ExitCode -ne 0) {
+        $errorOutput = Get-Content "cmake_configure_error.log" -ErrorAction SilentlyContinue
+        $output = Get-Content "cmake_configure_output.log" -ErrorAction SilentlyContinue
+        
+        Write-Host "CMake configuration output:" -ForegroundColor Yellow
+        if ($output) { $output | ForEach-Object { Write-Host $_ } }
+        
+        Write-Host "CMake configuration error:" -ForegroundColor Red
+        if ($errorOutput) { $errorOutput | ForEach-Object { Write-Host $_ } }
+        
+        Write-Host "ERROR: CMake configuration failed with exit code $($process.ExitCode)" -ForegroundColor Red
+        exit 1
+    }
+    
+    # Display the output for debugging
+    $output = Get-Content "cmake_configure_output.log" -ErrorAction SilentlyContinue
+    $output | ForEach-Object { Write-Host $_ }
+    
+} catch {
+    Write-Host "ERROR: Failed to configure project with CMake: $_" -ForegroundColor Red
+    exit 1
+}
+Write-Host "CMake configuration completed successfully" -ForegroundColor Green
+Write-Host ""
+
+# Build the project
+Write-Host "===== Building Project ($BuildType Configuration) =====" -ForegroundColor Cyan
+try {
+    # Run build inside a cmd.exe process with Visual Studio environment set up
+    $cmakeBuildCmd = "cmake --build . --config $BuildType"
+    $cmdArgs = "/c `"$vcvarsPath`" $vcvarsArgs & cd $buildDir & $cmakeBuildCmd"
+    
+    Write-Host "Running: $cmakeBuildCmd"
+    $process = Start-Process -FilePath "cmd.exe" -ArgumentList $cmdArgs -NoNewWindow -Wait -PassThru
+    
+    if ($process.ExitCode -ne 0) {
+        Write-Host "ERROR: Build failed with exit code $($process.ExitCode)" -ForegroundColor Red
+        exit 1
+    }
+} catch {
+    Write-Host "ERROR: Failed to build project: $_" -ForegroundColor Red
+    exit 1
+}
+Write-Host "Build completed successfully" -ForegroundColor Green
+Write-Host ""
+
+# Show build results
+$vst3Path = "$buildDir\VolumeControlPlugin_artefacts\$BuildType\VST3"
+$standalonePath = "$buildDir\VolumeControlPlugin_artefacts\$BuildType\Standalone"
+
+Write-Host "===== Build Complete! =====" -ForegroundColor Cyan
+Write-Host "Binaries are located at:"
+Write-Host "   VST3 Plugin: $vst3Path" -ForegroundColor Gray
+Write-Host "   Standalone: $standalonePath" -ForegroundColor Gray
+Write-Host ""
+Write-Host "Next steps:"
+Write-Host "1. Copy the VST3 plugin to your VST3 plugins directory" -ForegroundColor Yellow
+Write-Host "2. Run your DAW or host to use the plugin" -ForegroundColor Yellow
+Write-Host ""
+Write-Host "==============================================" -ForegroundColor Cyan
