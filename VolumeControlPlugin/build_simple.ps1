@@ -147,9 +147,10 @@ catch {
 }
 
 # Step 4: Build the project
-Write-Step "Building Project ($BuildType Configuration)"
+$buildStepMessage = "Building Project ($BuildType)"
+Write-Step $buildStepMessage
 try {
-    $buildArgs = "--build", ".", "--config", $BuildType
+    $buildArgs = "--build", ".", "--config", "$BuildType"
     Write-ColorText "Running: cmake $buildArgs" "Gray"
     
     $buildProcess = Start-Process -FilePath "cmake" -ArgumentList $buildArgs -NoNewWindow -PassThru -Wait
