@@ -20,8 +20,33 @@ Write-Host "This script will build the VST3 plugin and standalone application"
 Write-Host "Current execution policy: $(Get-ExecutionPolicy)"
 Write-Host ""
 
-# Check if running from WSL path
+# Check if running from a system directory
 $currentPath = Get-Location
+$isSystemDir = $currentPath -like "C:\Windows\*" -or $currentPath -like "C:\Program Files\*" -or $currentPath -like "C:\Program Files (x86)\*"
+
+if ($isSystemDir) {
+    Write-Host "WARNING: You're running from a system directory: $currentPath" -ForegroundColor Yellow
+    Write-Host "This may cause permission issues or other unexpected behavior." -ForegroundColor Yellow
+    Write-Host "It's recommended to move your project to a non-system location like:" -ForegroundColor Yellow
+    Write-Host "  - C:\Dev\VolumeControlPlugin" -ForegroundColor White
+    Write-Host "  - C:\Projects\VolumeControlPlugin" -ForegroundColor White
+    Write-Host "  - C:\Users\YourUsername\Projects\VolumeControlPlugin" -ForegroundColor White
+    Write-Host ""
+    
+    # Ask for confirmation before proceeding
+    Write-Host "Do you want to continue anyway? (y/n)" -ForegroundColor White
+    $confirm = Read-Host
+    
+    if ($confirm -ne "y" -and $confirm -ne "Y") {
+        Write-Host "Build aborted. Please move your project to a non-system directory." -ForegroundColor Red
+        exit 1
+    }
+    
+    Write-Host "Proceeding with build in system directory..." -ForegroundColor Yellow
+    Write-Host ""
+}
+
+# Check if running from WSL path
 $isWslPath = $currentPath -like "\\wsl.localhost\*" -or $currentPath -like "\\wsl$\*"
 
 if ($isWslPath) {
@@ -156,34 +181,34 @@ Write-Host ""
 
 # Configure with CMake
 Write-Host "===== Configuring with CMake =====" -ForegroundColor Cyan
-$vcvarsArgs = "x64"
-Write-Host "Running: cmd.exe /c `"$vcvarsPath`" $vcvarsArgs `&`& cmake with Visual Studio generator"
+
+# Properly quote the vcvarsall.bat path to handle spaces
+$quotedVcvarsPath = "`"$vcvarsPath`""
+Write-Host "Running: cmd.exe with Visual Studio environment and cmake"
 
 try {
-    # Run CMake inside a cmd.exe process with Visual Studio environment set up
-    $cmakeConfigureCmd = "cmake -G `"$cmakeGenerator`" -A x64 .."
-    $cmdArgs = "/c `"$vcvarsPath`" $vcvarsArgs & cd $buildDir & $cmakeConfigureCmd"
+    # Create a batch file with the commands to avoid command line length and quoting issues
+    $batchFile = Join-Path $PWD "temp_cmake_config.bat"
     
-    $process = Start-Process -FilePath "cmd.exe" -ArgumentList $cmdArgs -NoNewWindow -Wait -PassThru -RedirectStandardOutput "cmake_configure_output.log" -RedirectStandardError "cmake_configure_error.log"
+    @"
+@echo off
+call $quotedVcvarsPath x64
+cd $buildDir
+cmake -G "$cmakeGenerator" -A x64 ..
+"@ | Out-File -FilePath $batchFile -Encoding ASCII
+    
+    # Run the batch file
+    $process = Start-Process -FilePath "cmd.exe" -ArgumentList "/c `"$batchFile`"" -NoNewWindow -Wait -PassThru
+    
+    # Clean up the temporary batch file
+    if (Test-Path $batchFile) {
+        Remove-Item $batchFile
+    }
     
     if ($process.ExitCode -ne 0) {
-        $errorOutput = Get-Content "cmake_configure_error.log" -ErrorAction SilentlyContinue
-        $output = Get-Content "cmake_configure_output.log" -ErrorAction SilentlyContinue
-        
-        Write-Host "CMake configuration output:" -ForegroundColor Yellow
-        if ($output) { $output | ForEach-Object { Write-Host $_ } }
-        
-        Write-Host "CMake configuration error:" -ForegroundColor Red
-        if ($errorOutput) { $errorOutput | ForEach-Object { Write-Host $_ } }
-        
         Write-Host "ERROR: CMake configuration failed with exit code $($process.ExitCode)" -ForegroundColor Red
         exit 1
     }
-    
-    # Display the output for debugging
-    $output = Get-Content "cmake_configure_output.log" -ErrorAction SilentlyContinue
-    $output | ForEach-Object { Write-Host $_ }
-    
 } catch {
     Write-Host "ERROR: Failed to configure project with CMake: $_" -ForegroundColor Red
     exit 1
@@ -194,12 +219,24 @@ Write-Host ""
 # Build the project
 Write-Host "===== Building Project ($BuildType Configuration) =====" -ForegroundColor Cyan
 try {
-    # Run build inside a cmd.exe process with Visual Studio environment set up
-    $cmakeBuildCmd = "cmake --build . --config $BuildType"
-    $cmdArgs = "/c `"$vcvarsPath`" $vcvarsArgs & cd $buildDir & $cmakeBuildCmd"
+    # Create a batch file for building to avoid command line issues
+    $batchFile = Join-Path $PWD "temp_cmake_build.bat"
     
-    Write-Host "Running: $cmakeBuildCmd"
-    $process = Start-Process -FilePath "cmd.exe" -ArgumentList $cmdArgs -NoNewWindow -Wait -PassThru
+    @"
+@echo off
+call $quotedVcvarsPath x64
+cd $buildDir
+cmake --build . --config $BuildType
+"@ | Out-File -FilePath $batchFile -Encoding ASCII
+    
+    # Run the batch file
+    Write-Host "Running: cmake --build . --config $BuildType"
+    $process = Start-Process -FilePath "cmd.exe" -ArgumentList "/c `"$batchFile`"" -NoNewWindow -Wait -PassThru
+    
+    # Clean up the temporary batch file
+    if (Test-Path $batchFile) {
+        Remove-Item $batchFile
+    }
     
     if ($process.ExitCode -ne 0) {
         Write-Host "ERROR: Build failed with exit code $($process.ExitCode)" -ForegroundColor Red
