@@ -23,7 +23,7 @@ function Write-Success {
 
 # Print header
 Write-Step "VOLUME CONTROL PLUGIN - CLEAN SCRIPT"
-Write-ColorText "This script will clean all build directories"
+Write-ColorText "This script will clean all build directories" "White"
 
 # Define build directories to clean
 $buildDirs = @(
@@ -50,7 +50,7 @@ foreach ($dir in $buildDirs) {
                 $anyCleaned = $true
             }
             catch {
-                Write-ColorText "Error removing $dir: $($_.Exception.Message)" "Red"
+                Write-ColorText "Error removing directory: $_" "Red"
             }
         }
         else {
@@ -69,4 +69,4 @@ else {
     Write-ColorText "No directories were cleaned" "Yellow"
 }
 
-Write-Step "Clean Script Complete!"
+Write-Step "Clean Script Complete"
