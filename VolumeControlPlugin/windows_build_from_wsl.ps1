@@ -5,7 +5,8 @@
 param(
     [string]$BuildType = "Release",  # Default to Release if not specified
     [string]$WindowsDestination = "C:\Temp\VolumeControlPlugin",  # Default Windows destination
-    [switch]$SkipCopy = $false  # Option to skip copying if files already exist
+    [switch]$SkipCopy = $false,  # Option to skip copying if files already exist
+    [switch]$Force = $false      # Option to force overwrite without prompting
 )
 
 $ErrorActionPreference = "Stop"  # Stop on first error
@@ -72,28 +73,93 @@ Write-Host "- Source path: $sourcePath" -ForegroundColor Gray
 Write-Host "- Destination path: $WindowsDestination" -ForegroundColor Gray
 Write-Host "- Build type: $BuildType" -ForegroundColor Gray
 Write-Host "- Skip copy: $SkipCopy" -ForegroundColor Gray
+Write-Host "- Force: $Force" -ForegroundColor Gray
 Write-Host ""
+
+# Function to safely clean and recreate directory
+function Reset-Directory {
+    param (
+        [string]$Path,
+        [switch]$CreateIfNotExists = $true
+    )
+    
+    if (Test-Path $Path) {
+        Write-Host "Cleaning directory: $Path" -ForegroundColor Yellow
+        
+        # First try the simple approach
+        try {
+            Remove-Item -Path $Path -Recurse -Force -ErrorAction Stop
+            Write-Host "Directory removed successfully" -ForegroundColor Green
+        }
+        catch {
+            Write-Host "Standard removal failed, trying alternative approach..." -ForegroundColor Yellow
+            
+            # Alternative approach - remove files first, then directories
+            $childItems = Get-ChildItem -Path $Path -Recurse
+            
+            # Remove files first
+            $childItems | Where-Object { !$_.PSIsContainer } | ForEach-Object {
+                Remove-Item -Path $_.FullName -Force -ErrorAction SilentlyContinue
+            }
+            
+            # Then remove directories from deepest to shallowest
+            $childItems | Where-Object { $_.PSIsContainer } | Sort-Object -Property FullName -Descending | ForEach-Object {
+                Remove-Item -Path $_.FullName -Force -ErrorAction SilentlyContinue
+            }
+            
+            # Finally, remove the root directory
+            Remove-Item -Path $Path -Force -ErrorAction SilentlyContinue
+            
+            # Check if removal was successful
+            if (Test-Path $Path) {
+                Write-Host "WARNING: Could not completely remove directory. Will try to reuse it." -ForegroundColor Yellow
+            } else {
+                Write-Host "Directory removed successfully with alternative approach" -ForegroundColor Green
+            }
+        }
+    }
+    
+    # Create the directory if it doesn't exist (or was successfully removed)
+    if (-not (Test-Path $Path) -and $CreateIfNotExists) {
+        try {
+            New-Item -Path $Path -ItemType Directory -Force | Out-Null
+            Write-Host "Directory created successfully" -ForegroundColor Green
+        }
+        catch {
+            Write-Host "ERROR: Failed to create directory: $_" -ForegroundColor Red
+            return $false
+        }
+    }
+    
+    return $true
+}
 
 # Check if destination exists
 if (Test-Path $WindowsDestination) {
-    if (-not $SkipCopy) {
+    if (-not $SkipCopy -and -not $Force) {
         Write-Host "Destination directory exists. Do you want to overwrite it? (y/n)" -ForegroundColor Yellow
         $confirm = Read-Host
         
         if ($confirm -eq "y" -or $confirm -eq "Y") {
-            Write-Host "Removing existing directory..." -ForegroundColor Yellow
-            Remove-Item -Path $WindowsDestination -Recurse -Force
-            Write-Host "Directory removed successfully" -ForegroundColor Green
+            if (-not (Reset-Directory -Path $WindowsDestination)) {
+                exit 1
+            }
         } else {
             Write-Host "Using existing directory (will only update changed files)" -ForegroundColor Yellow
+        }
+    } elseif (-not $SkipCopy -and $Force) {
+        # Force overwrite without asking
+        if (-not (Reset-Directory -Path $WindowsDestination)) {
+            exit 1
         }
     } else {
         Write-Host "Skip copy enabled. Using existing directory..." -ForegroundColor Yellow
     }
 } else {
     Write-Host "Creating destination directory..." -ForegroundColor Yellow
-    New-Item -Path $WindowsDestination -ItemType Directory -Force | Out-Null
-    Write-Host "Directory created successfully" -ForegroundColor Green
+    if (-not (Reset-Directory -Path $WindowsDestination)) {
+        exit 1
+    }
 }
 
 # Copy files if not skipped
@@ -104,8 +170,27 @@ if (-not $SkipCopy) {
     Write-Host "This may take a moment..." -ForegroundColor Yellow
     
     try {
-        # Copy the project files
-        Copy-Item -Path "$sourcePath\*" -Destination $WindowsDestination -Recurse -Force -Exclude "build_vs"
+        # Copy project files (excluding build directory)
+        $sourceItems = Get-ChildItem -Path $sourcePath -Exclude "build_vs"
+        foreach ($item in $sourceItems) {
+            $destinationPath = Join-Path $WindowsDestination $item.Name
+            
+            # If the item is a directory
+            if ($item.PSIsContainer) {
+                # Make sure destination directory exists
+                if (-not (Test-Path $destinationPath)) {
+                    New-Item -Path $destinationPath -ItemType Directory -Force | Out-Null
+                }
+                
+                # Copy contents
+                Copy-Item -Path "$($item.FullName)\*" -Destination $destinationPath -Recurse -Force
+            } else {
+                # It's a file, copy it directly
+                Copy-Item -Path $item.FullName -Destination $destinationPath -Force
+            }
+        }
+        
+        Write-Host "Project files copied successfully" -ForegroundColor Green
         
         # Copy the JUCE directory if it exists at the same level
         $juceSourcePath = "$sourcePath\..\JUCE"
@@ -116,9 +201,29 @@ if (-not $SkipCopy) {
             
             if (-not (Test-Path $juceDestPath)) {
                 Write-Host "Copying JUCE directory to $juceDestPath" -ForegroundColor Yellow
-                New-Item -Path $juceDestPath -ItemType Directory -Force | Out-Null
-                Copy-Item -Path "$juceSourcePath\*" -Destination $juceDestPath -Recurse -Force
-                Write-Host "JUCE directory copied successfully" -ForegroundColor Green
+                if (Reset-Directory -Path $juceDestPath) {
+                    # Copy JUCE files
+                    $juceSourceItems = Get-ChildItem -Path $juceSourcePath
+                    foreach ($item in $juceSourceItems) {
+                        $juceDestinationPath = Join-Path $juceDestPath $item.Name
+                        
+                        # If the item is a directory
+                        if ($item.PSIsContainer) {
+                            # Make sure destination directory exists
+                            if (-not (Test-Path $juceDestinationPath)) {
+                                New-Item -Path $juceDestinationPath -ItemType Directory -Force | Out-Null
+                            }
+                            
+                            # Copy contents (ignore errors on some problematic files)
+                            Copy-Item -Path "$($item.FullName)\*" -Destination $juceDestinationPath -Recurse -Force -ErrorAction SilentlyContinue
+                        } else {
+                            # It's a file, copy it directly
+                            Copy-Item -Path $item.FullName -Destination $juceDestinationPath -Force -ErrorAction SilentlyContinue
+                        }
+                    }
+                    
+                    Write-Host "JUCE directory copied successfully" -ForegroundColor Green
+                }
             } else {
                 Write-Host "JUCE directory already exists at destination. Skipping copy." -ForegroundColor Yellow
             }
@@ -130,7 +235,25 @@ if (-not $SkipCopy) {
         Write-Host "All files copied successfully" -ForegroundColor Green
     } catch {
         Write-Host "ERROR: Failed to copy files: $_" -ForegroundColor Red
-        exit 1
+        
+        Write-Host ""
+        Write-Host "Troubleshooting Copy Error:" -ForegroundColor Yellow
+        Write-Host "1. Try running with the -Force parameter: .\windows_build_from_wsl.ps1 -Force" -ForegroundColor White
+        Write-Host "2. Try manually copying the files from WSL to Windows:" -ForegroundColor White
+        Write-Host "   a. Create a directory: mkdir C:\Temp\VolumeControlPlugin" -ForegroundColor Gray
+        Write-Host "   b. Copy files: copy-item -Path '\\wsl.localhost\Ubuntu\path\to\VolumeControlPlugin\*' -Destination 'C:\Temp\VolumeControlPlugin' -Recurse" -ForegroundColor Gray
+        Write-Host "3. Try running this script from Windows PowerShell as Administrator" -ForegroundColor White
+        
+        # Ask if user wants to continue with existing files
+        Write-Host ""
+        Write-Host "Do you want to continue with existing files? (y/n)" -ForegroundColor Yellow
+        $continueDespiteError = Read-Host
+        
+        if ($continueDespiteError -ne "y" -and $continueDespiteError -ne "Y") {
+            exit 1
+        } else {
+            Write-Host "Continuing with existing files..." -ForegroundColor Yellow
+        }
     }
 }
 
@@ -379,6 +502,8 @@ Write-Host ""
 Write-Host "For future builds after making changes in WSL:" -ForegroundColor Yellow
 Write-Host "1. For faster builds (skips copying files): " -ForegroundColor White
 Write-Host "   .\windows_build_from_wsl.ps1 -SkipCopy" -ForegroundColor Gray
-Write-Host "2. To clean the build: " -ForegroundColor White
+Write-Host "2. To force clean rebuild with new files: " -ForegroundColor White
+Write-Host "   .\windows_build_from_wsl.ps1 -Force" -ForegroundColor Gray
+Write-Host "3. To clean the build: " -ForegroundColor White
 Write-Host "   cd $WindowsDestination && .\clean.ps1" -ForegroundColor Gray
 Write-Host ""
