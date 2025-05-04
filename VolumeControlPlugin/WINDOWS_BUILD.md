@@ -9,6 +9,7 @@ Before building the plugin, ensure you have the following installed on your Wind
 1. **Visual Studio 2019 or 2022** with "Desktop development with C++" workload
    - Download from: [Visual Studio Downloads](https://visualstudio.microsoft.com/downloads/)
    - During installation, make sure to select "Desktop development with C++" workload
+   - Also select the latest "Windows 10 SDK" component
 
 2. **CMake** (version 3.15 or higher)
    - Download from: [CMake Downloads](https://cmake.org/download/)
@@ -32,6 +33,14 @@ Two PowerShell scripts are provided for building the plugin:
 - `build_simple.ps1`: A streamlined script with clear output for quick builds
 - `build_plugin.ps1`: A more detailed script with comprehensive feedback
 
+### Important: Project Location
+
+For successful Windows builds, the project must be located on a Windows path:
+
+- Do NOT run build scripts from WSL paths like `\\wsl.localhost\...`
+- Avoid system directories like `C:\Windows\System32\...`
+- Recommended locations: `C:\Dev\VolumeControlPlugin` or `C:\Users\YourName\Projects\VolumeControlPlugin`
+
 ### Option 1: Using the Simple Build Script (Recommended)
 
 1. **Open PowerShell** as Administrator
@@ -39,7 +48,7 @@ Two PowerShell scripts are provided for building the plugin:
 
 2. **Navigate to the project directory**
    ```powershell
-   cd path\to\VolumeControlPlugin
+   cd C:\path\to\VolumeControlPlugin  # Use a Windows path, not WSL path
    ```
 
 3. **Run the build script**
@@ -61,7 +70,7 @@ Two PowerShell scripts are provided for building the plugin:
 
 2. **Navigate to the project directory**
    ```powershell
-   cd path\to\VolumeControlPlugin
+   cd C:\path\to\VolumeControlPlugin
    ```
 
 3. **Run the build script with your preferred configuration**
@@ -71,41 +80,6 @@ Two PowerShell scripts are provided for building the plugin:
    
    # For Debug build
    .\build_plugin.ps1 Debug
-   ```
-
-4. **If you encounter an execution policy error**, run:
-   ```powershell
-   Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
-   .\build_plugin.ps1
-   ```
-
-## Important: WSL Compatibility
-
-### Limitations with WSL Paths
-
-Our build scripts detect when they're running from a WSL path (like `\\wsl.localhost\Ubuntu\...`) and will display an error message. This is because **Windows Command Prompt (CMD) cannot use UNC paths as the current directory**, which prevents CMake from running properly.
-
-### Alternatives for WSL Users
-
-If you're developing in WSL, you have these options:
-
-1. **Clone the repository to a Windows path (recommended)**:
-   ```bash
-   # From Windows PowerShell
-   git clone <your-repo-url> C:\Dev\VolumeControlPlugin
-   cd C:\Dev\VolumeControlPlugin
-   .\build_simple.ps1
-   ```
-
-2. **Use native Linux build process**:
-   - See README_BUILD.md for Linux build instructions using the native build.sh script
-
-3. **Copy project files to a Windows path and build from there**:
-   ```powershell
-   # From Windows PowerShell
-   Copy-Item -Path "\\wsl.localhost\Ubuntu\path\to\VolumeControlPlugin" -Destination "C:\Temp\VolumeControlPlugin" -Recurse
-   cd C:\Temp\VolumeControlPlugin
-   .\build_simple.ps1
    ```
 
 ## Build Output Locations
@@ -188,13 +162,34 @@ Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
 - Ensure CMake is added to your system PATH
 - Restart PowerShell after installation
 
+### Compiler Not Found
+
+**Issue**: "No CMAKE_C_COMPILER could be found" or "No CMAKE_CXX_COMPILER could be found"  
+**Solution**:
+- Make sure Visual Studio is installed with "Desktop development with C++" workload
+- Install/reinstall the Windows 10 SDK from Visual Studio Installer
+- Run Visual Studio at least once to complete any first-run setup
+- Check if antivirus is blocking cl.exe or vcvarsall.bat
+- Run the build script as Administrator
+- The script will attempt a fallback configuration if the primary method fails
+
 ### WSL Path Error
 
 **Issue**: "Cannot build directly from WSL path", "UNC paths are not supported"  
 **Solution**:
 - You cannot run the Windows build scripts from a WSL path (\\wsl.localhost\...)
-- Clone the repository to a native Windows path as described in the "WSL Compatibility" section
-- Alternatively, use the Linux build instructions from within WSL
+- Clone the repository to a native Windows path:
+  ```powershell
+  git clone https://github.com/your-repo/VolumeControlPlugin.git C:\Dev\VolumeControlPlugin
+  cd C:\Dev\VolumeControlPlugin
+  ```
+
+### System Directory Warning
+
+**Issue**: "You're running from a system directory"  
+**Solution**:
+- Avoid running build scripts from system directories like C:\Windows\System32
+- Move your project to a standard development location like C:\Dev or C:\Projects
 
 ### JUCE Not Found
 
@@ -214,13 +209,14 @@ Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
 **Solution**:
 - Clean the build directories with `.\clean.ps1`
 - Try building with the Debug configuration: `.\build_plugin.ps1 Debug`
+- Make sure you have the latest Windows build scripts that include compiler detection fixes
 - Check the console output for specific error messages
 
 ## Advanced: Manual Build without Scripts
 
 If you prefer to build manually, you need to set up the Visual Studio environment first:
 
-1. **Open a Command Prompt or PowerShell window**
+1. **Open a Command Prompt window**
 
 2. **Set up the Visual Studio environment**:
    ```cmd
@@ -249,10 +245,24 @@ If you prefer to build manually, you need to set up the Visual Studio environmen
    build_manual\VolumeControlPlugin_artefacts\Release\VST3\VolumeControlPlugin.vst3
    ```
 
+## Cross-Platform Development
+
+This project supports both Windows and Linux development:
+
+- You can develop primarily on Linux using the Linux build scripts
+- You can build natively on Windows using these PowerShell scripts
+- The same codebase works on both platforms without cross-compilation
+
+When working across platforms, just remember:
+- Build on Windows using a Windows path (not a WSL path)
+- Build on Linux using the native Linux build script (build.sh)
+
 ## Need Help?
 
 If you encounter any issues not covered in this guide:
 
-1. Check the full documentation in README_BUILD.md
+1. Check the script output for detailed error messages
 2. Make sure all prerequisites are correctly installed
-3. Try cleaning the build with `.\clean.ps1` and building again
+3. Try running the script with `-Verbose` for more detailed logging:
+   ```powershell
+   .\build_simple.ps1 -Verbose
