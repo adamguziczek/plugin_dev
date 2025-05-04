@@ -2,6 +2,14 @@
 # This script copies files from WSL to a Windows directory and runs the build script
 # Run with: PowerShell -ExecutionPolicy Bypass -File windows_build_from_wsl.ps1
 
+param(
+    [string]$BuildType = "Release",  # Default to Release if not specified
+    [string]$WindowsDestination = "C:\Temp\VolumeControlPlugin",  # Default Windows destination
+    [switch]$SkipCopy = $false  # Option to skip copying if files already exist
+)
+
+$ErrorActionPreference = "Stop"  # Stop on first error
+
 # Function to find Visual Studio installation
 function Find-VisualStudio {
     $vsYears = @(2022, 2019, 2017)  # Visual Studio versions to check in order
@@ -38,19 +46,12 @@ function Find-VisualStudio {
     
     return $vsInstallations
 }
-param(
-    [string]$BuildType = "Release",  # Default to Release if not specified
-    [string]$WindowsDestination = "C:\Temp\VolumeControlPlugin",  # Default Windows destination
-    [switch]$SkipCopy = $false  # Option to skip copying if files already exist
-)
-
-$ErrorActionPreference = "Stop"  # Stop on first error
 
 # Display header
 Write-Host ""
 Write-Host "===== VOLUME CONTROL PLUGIN - WSL TO WINDOWS BUILD HELPER =====" -ForegroundColor Cyan
 Write-Host "This script will copy your project from WSL to a Windows directory"
-Write-Host "and then build it using the build_simple.ps1 script."
+Write-Host "and then build it using Visual Studio tools."
 Write-Host ""
 
 # Get current directory
@@ -222,29 +223,6 @@ if (![string]::IsNullOrEmpty($windowsSdkPath)) {
     Write-Host "Please install Windows 10 SDK through Visual Studio Installer" -ForegroundColor Yellow
 }
 
-# Create custom CMake toolchain file for better compiler detection
-Write-Host "Creating CMake toolchain file..." -ForegroundColor Yellow
-$toolchainFilePath = Join-Path $WindowsDestination "vs_toolchain.cmake"
-
-@"
-# VS Toolchain File
-set(CMAKE_SYSTEM_NAME Windows)
-set(CMAKE_SYSTEM_PROCESSOR AMD64)
-
-# Force Visual Studio to find the proper kit
-set(CMAKE_GENERATOR_PLATFORM "x64" CACHE STRING "" FORCE)
-set(CMAKE_GENERATOR_TOOLSET "host=x64" CACHE STRING "" FORCE)
-
-# Ensure the right Windows SDK version is used
-set(CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION "$sdkVersion" CACHE STRING "" FORCE)
-
-# C/C++ compilers must be initialized inside vcvarsall.bat environment
-set(CMAKE_C_COMPILER "cl.exe" CACHE FILEPATH "C compiler" FORCE)
-set(CMAKE_CXX_COMPILER "cl.exe" CACHE FILEPATH "C++ compiler" FORCE)
-"@ | Out-File -FilePath $toolchainFilePath -Encoding ASCII
-
-Write-Host "CMake toolchain file created at: $toolchainFilePath" -ForegroundColor Green
-
 # Create build directory
 $buildDir = "build_vs"
 if (!(Test-Path $buildDir)) {
@@ -254,70 +232,127 @@ if (!(Test-Path $buildDir)) {
     Write-Host "Using existing build directory: $buildDir" -ForegroundColor Yellow
 }
 
-# Create a batch file to handle the build process with environment setup
-$buildBatchPath = Join-Path $WindowsDestination "win_build.bat"
+# Create direct batch file for Visual Studio build
+$buildBatchPath = Join-Path $WindowsDestination "win_cmake_build.bat"
 
 @"
 @echo off
+setlocal enabledelayedexpansion
+
 echo Setting up Visual Studio environment...
 call "$vcvarsPath" x64
+if %ERRORLEVEL% NEQ 0 (
+    echo Failed to set up Visual Studio environment
+    exit /b 1
+)
 
-echo Configuring CMake...
+echo --------- Environment Info ---------
+echo Visual Studio Path: $($vs.installationPath)
+echo Windows SDK Version: $sdkVersion
+echo Current Directory: %CD%
+echo ----------------------------------
+
 cd $buildDir
-cmake -G "$cmakeGenerator" -A x64 -DCMAKE_TOOLCHAIN_FILE=../vs_toolchain.cmake ..
+if %ERRORLEVEL% NEQ 0 (
+    echo Failed to change to build directory
+    exit /b 1
+)
+
+echo Running CMake configuration...
+cmake -G "$cmakeGenerator" -A x64 ..
+if %ERRORLEVEL% NEQ 0 (
+    echo CMake configuration failed
+    exit /b 1
+)
 
 echo Building project...
-cmake --build . --config $BuildType --parallel 4
+cmake --build . --config $BuildType
+if %ERRORLEVEL% NEQ 0 (
+    echo Build failed
+    exit /b 1
+)
 
-exit /b %ERRORLEVEL%
+echo Build completed successfully
+exit /b 0
 "@ | Out-File -FilePath $buildBatchPath -Encoding ASCII
 
 # Execute the batch file
 Write-Host ""
 Write-Host "===== Building Project =====" -ForegroundColor Cyan
-Write-Host "Running build with Visual Studio $vsYear environment and $BuildType configuration"
+Write-Host "Running build with Visual Studio $vsYear and $BuildType configuration"
 try {
     $process = Start-Process -FilePath "cmd.exe" -ArgumentList "/c `"$buildBatchPath`"" -NoNewWindow -Wait -PassThru
     
     if ($process.ExitCode -ne 0) {
         Write-Host "Build failed with exit code $($process.ExitCode)" -ForegroundColor Red
         
-        # If the main build failed, try a different approach as fallback
+        # Try another approach with environment variables
         Write-Host ""
-        Write-Host "Trying alternative approach as fallback..." -ForegroundColor Yellow
+        Write-Host "Trying alternative build approach..." -ForegroundColor Yellow
         
-        $fallbackBatchPath = Join-Path $WindowsDestination "win_build_fallback.bat"
+        $fallbackBatchPath = Join-Path $WindowsDestination "win_fallback_build.bat"
         
         @"
 @echo off
-echo Setting up Visual Studio environment (Fallback)...
-call "$vcvarsPath" x64
+setlocal enabledelayedexpansion
 
-echo Setting environment variables to help compiler detection...
+echo Setting up Visual Studio environment...
+call "$vcvarsPath" x64
+if %ERRORLEVEL% NEQ 0 (
+    echo Failed to set up Visual Studio environment
+    exit /b 1
+)
+
+echo Setting extra environment variables to help compiler detection...
 set CC=cl.exe
 set CXX=cl.exe
 
-echo Configuring CMake (Direct approach)...
 cd $buildDir
+if %ERRORLEVEL% NEQ 0 (
+    echo Failed to change to build directory
+    exit /b 1
+)
+
+echo Cleaning CMake cache...
+if exist CMakeCache.txt (
+    del /f /q CMakeCache.txt
+)
+if exist CMakeFiles (
+    rd /s /q CMakeFiles
+)
+
+echo Running simplified CMake configuration...
 cmake -G "$cmakeGenerator" -A x64 ..
+if %ERRORLEVEL% NEQ 0 (
+    echo CMake configuration failed
+    exit /b 1
+)
 
 echo Building project...
 cmake --build . --config $BuildType
+if %ERRORLEVEL% NEQ 0 (
+    echo Build failed
+    exit /b 1
+)
 
-exit /b %ERRORLEVEL%
+echo Build completed successfully
+exit /b 0
 "@ | Out-File -FilePath $fallbackBatchPath -Encoding ASCII
         
         $fallbackProcess = Start-Process -FilePath "cmd.exe" -ArgumentList "/c `"$fallbackBatchPath`"" -NoNewWindow -Wait -PassThru
         
         if ($fallbackProcess.ExitCode -ne 0) {
-            Write-Host "Fallback build also failed with exit code $($fallbackProcess.ExitCode)" -ForegroundColor Red
+            Write-Host "Alternative build approach also failed." -ForegroundColor Red
             Write-Host ""
-            Write-Host "Please try running build_simple.ps1 directly from a Windows path:" -ForegroundColor Yellow
-            Write-Host "1. Clone the repository to a Windows path like C:\Dev\VolumeControlPlugin" -ForegroundColor White
-            Write-Host "2. Run .\build_simple.ps1 from that location" -ForegroundColor White
+            Write-Host "Troubleshooting Suggestions:" -ForegroundColor Yellow
+            Write-Host "1. Make sure Visual Studio is installed with 'Desktop development with C++' workload" -ForegroundColor White
+            Write-Host "2. Install the latest Windows 10 SDK from Visual Studio Installer" -ForegroundColor White
+            Write-Host "3. Try building directly from a Windows path instead of from WSL:" -ForegroundColor White
+            Write-Host "   - Clone the repository to C:\Dev\VolumeControlPlugin" -ForegroundColor White
+            Write-Host "   - Run the build scripts from there" -ForegroundColor White
             exit 1
         } else {
-            Write-Host "Fallback build completed successfully!" -ForegroundColor Green
+            Write-Host "Build completed successfully using alternative approach!" -ForegroundColor Green
         }
     } else {
         Write-Host "Build completed successfully!" -ForegroundColor Green
@@ -327,15 +362,8 @@ exit /b %ERRORLEVEL%
     exit 1
 } finally {
     # Clean up temp files
-    if (Test-Path $buildBatchPath) {
-        Remove-Item $buildBatchPath
-    }
-    if (Test-Path $fallbackBatchPath) {
-        Remove-Item $fallbackBatchPath
-    }
-    if (Test-Path $toolchainFilePath) {
-        Remove-Item $toolchainFilePath
-    }
+    Remove-Item $buildBatchPath -ErrorAction SilentlyContinue
+    Remove-Item $fallbackBatchPath -ErrorAction SilentlyContinue
 }
 
 Write-Host ""
@@ -348,9 +376,9 @@ Write-Host "C:\Program Files\Common Files\VST3\" -ForegroundColor Gray
 Write-Host ""
 
 # Info on using the plugin and next steps
-Write-Host "Troubleshooting Tips:" -ForegroundColor Yellow
-Write-Host "1. Make sure Visual Studio is installed with Desktop C++ workload" -ForegroundColor White 
-Write-Host "2. Make sure Windows 10 SDK is installed through Visual Studio Installer" -ForegroundColor White
-Write-Host "3. For faster builds after making changes, use: .\windows_build_from_wsl.ps1 -SkipCopy" -ForegroundColor White
-Write-Host "4. To clean the build: cd $WindowsDestination && .\clean.ps1" -ForegroundColor White
+Write-Host "For future builds after making changes in WSL:" -ForegroundColor Yellow
+Write-Host "1. For faster builds (skips copying files): " -ForegroundColor White
+Write-Host "   .\windows_build_from_wsl.ps1 -SkipCopy" -ForegroundColor Gray
+Write-Host "2. To clean the build: " -ForegroundColor White
+Write-Host "   cd $WindowsDestination && .\clean.ps1" -ForegroundColor Gray
 Write-Host ""
