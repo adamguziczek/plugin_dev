@@ -2,32 +2,13 @@
 # This script cleans the build directories created by PowerShell build scripts
 # Run with: PowerShell -ExecutionPolicy Bypass -File clean.ps1
 
-# Helper functions
-function Write-ColorText {
-    param (
-        [string]$Text,
-        [string]$Color = "White"
-    )
-    Write-Host $Text -ForegroundColor $Color
-}
-
-function Write-Step {
-    param ([string]$Text)
-    Write-ColorText "`n===== $Text =====" "Cyan"
-}
-
-function Write-Success {
-    param ([string]$Text)
-    Write-ColorText "✓ $Text" "Green"
-}
-
 # Print header
-Write-Step "VOLUME CONTROL PLUGIN - CLEAN SCRIPT"
-Write-ColorText "This script will clean all build directories" "White"
+Write-Host "`n===== VOLUME CONTROL PLUGIN - CLEAN SCRIPT =====" -ForegroundColor Cyan
+Write-Host "This script will clean all build directories" -ForegroundColor White
 
 # Define build directories to clean
 $buildDirs = @(
-    "build_vs"
+    'build_vs'
 )
 
 # Track if any directories were cleaned
@@ -37,36 +18,37 @@ foreach ($dir in $buildDirs) {
     $fullPath = Join-Path $PSScriptRoot $dir
     
     if (Test-Path $fullPath) {
-        Write-ColorText "Found build directory: $dir" "Yellow"
+        Write-Host "Found build directory: $dir" -ForegroundColor Yellow
         
         # Ask for confirmation
         $confirm = Read-Host "Are you sure you want to remove the $dir directory? (y/n)"
         
-        if ($confirm -eq "y" -or $confirm -eq "Y") {
+        if ($confirm -eq 'y' -or $confirm -eq 'Y') {
             try {
-                Write-ColorText "Removing $dir..." "Yellow"
+                Write-Host "Removing $dir..." -ForegroundColor Yellow
                 Remove-Item -Path $fullPath -Recurse -Force
-                Write-Success "$dir directory removed successfully"
+                Write-Host "✓ $dir directory removed successfully" -ForegroundColor Green
                 $anyCleaned = $true
             }
             catch {
-                Write-ColorText "Error removing directory: $_" "Red"
+                $errorMessage = $_.Exception.Message
+                Write-Host "Error removing directory: $errorMessage" -ForegroundColor Red
             }
         }
         else {
-            Write-ColorText "Skipping $dir directory" "Yellow"
+            Write-Host "Skipping $dir directory" -ForegroundColor Yellow
         }
     }
     else {
-        Write-ColorText "$dir directory does not exist, nothing to clean" "Gray"
+        Write-Host "$dir directory does not exist, nothing to clean" -ForegroundColor Gray
     }
 }
 
 if ($anyCleaned) {
-    Write-Success "Clean completed successfully"
+    Write-Host "✓ Clean completed successfully" -ForegroundColor Green
 }
 else {
-    Write-ColorText "No directories were cleaned" "Yellow"
+    Write-Host "No directories were cleaned" -ForegroundColor Yellow
 }
 
-Write-Step "Clean Script Complete"
+Write-Host "`n===== Clean Script Complete =====" -ForegroundColor Cyan
