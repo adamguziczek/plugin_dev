@@ -7,6 +7,26 @@ Write-Host ""
 Write-Host "===== VOLUME CONTROL PLUGIN - CLEAN SCRIPT =====" -ForegroundColor Cyan
 Write-Host "This script will clean all build directories" -ForegroundColor White
 
+# Check if running from WSL path
+$currentPath = Get-Location
+$isWslPath = $currentPath -like "\\wsl.localhost\*" -or $currentPath -like "\\wsl$\*"
+
+if ($isWslPath) {
+    Write-Host "WSL PATH DETECTED: $currentPath" -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "ERROR: Cannot run clean script directly from WSL path." -ForegroundColor Red
+    Write-Host "Windows CMD doesn't support UNC paths as current directories." -ForegroundColor Red
+    Write-Host ""
+    Write-Host "Please use one of these alternatives:" -ForegroundColor Cyan
+    Write-Host "1. Clone the repository to a Windows path (recommended):" -ForegroundColor White
+    Write-Host "   git clone <your-repo-url> C:\Dev\VolumeControlPlugin" -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "2. Use the Linux clean script from WSL:" -ForegroundColor White
+    Write-Host "   ./clean.sh" -ForegroundColor Gray
+    Write-Host ""
+    exit 1
+}
+
 # Define build directories to clean
 $buildDirs = @(
     "build_vs"
