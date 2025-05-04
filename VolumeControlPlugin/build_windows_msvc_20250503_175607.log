@@ -1,0 +1,127 @@
+VolumeControlPlugin Windows MSVC Build Log (20250503_175607)
+====================================================
+
+[0;34m=============================================[0m
+[0;34m=============================================[0m
+[0;34m  VolumeControlPlugin Windows MSVC Build Script   [0m
+[0;34m  VolumeControlPlugin Windows MSVC Build Script   [0m
+[0;34m=============================================[0m
+[0;34m=============================================[0m
+[0;34m[INFO][0m Checking prerequisites for Windows MSVC cross-compilation...
+[0;34m[INFO][0m Checking prerequisites for Windows MSVC cross-compilation...
+[0;34m[INFO][0m Using CMake version 3.28
+[0;34m[INFO][0m Using CMake version 3.28
+[0;32m[SUCCESS][0m All prerequisites satisfied!
+[0;32m[SUCCESS][0m All prerequisites satisfied!
+[0;34m[INFO][0m Creating Windows MSVC build directory...
+[0;34m[INFO][0m Creating Windows MSVC build directory...
+[0;34m[INFO][0m Windows MSVC build directory already exists at /home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_msvc
+[0;34m[INFO][0m Windows MSVC build directory already exists at /home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_msvc
+[0;34m[INFO][0m Running CMake to configure the Windows MSVC project...
+[0;34m[INFO][0m Running CMake to configure the Windows MSVC project...
+[0;34m[INFO][0m Cleaning previous build artifacts...
+[0;34m[INFO][0m Cleaning previous build artifacts...
+[0;34m[INFO][0m Running: cmake -DCMAKE_TOOLCHAIN_FILE=../msvc-toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DJUCE_WINDOWS=TRUE -DJUCE_DIR=/home/aguziczek/plugin_dev/VolumeControlPlugin/../JUCE -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY ..
+[0;34m[INFO][0m Running: cmake -DCMAKE_TOOLCHAIN_FILE=../msvc-toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DJUCE_WINDOWS=TRUE -DJUCE_DIR=/home/aguziczek/plugin_dev/VolumeControlPlugin/../JUCE -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY ..
+-- MSVC toolchain configured for Windows cross-compilation
+-- C compiler: /mnt/c/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/bin/Hostx64/x64/cl.exe
+-- CXX compiler: /mnt/c/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/bin/Hostx64/x64/cl.exe
+-- WSL to Windows path conversion enabled
+-- MSVC toolchain configured for Windows cross-compilation
+-- C compiler: /mnt/c/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/bin/Hostx64/x64/cl.exe
+-- CXX compiler: /mnt/c/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/bin/Hostx64/x64/cl.exe
+-- WSL to Windows path conversion enabled
+-- The C compiler identification is MSVC 19.29.30148.0
+-- The CXX compiler identification is MSVC 19.29.30148.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - failed
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - failed
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found PkgConfig: /usr/bin/pkg-config (found version "1.8.1") 
+-- Checking for module 'gtk+-3.0'
+--   Found gtk+-3.0, version 3.24.41
+-- Checking for module 'webkit2gtk-4.1'
+--   Found webkit2gtk-4.1, version 2.48.1
+-- Checking for module 'libcurl'
+--   Found libcurl, version 8.5.0
+-- Configuring juceaide
+-- Building juceaide
+-- Exporting juceaide
+-- Testing juceaide
+-- Finished setting up juceaide
+CMake Error at /home/aguziczek/plugin_dev/JUCE/extras/Build/CMake/JUCEUtils.cmake:1207 (message):
+  Unsupported target architecture for VST3: Change Dir:
+  '/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_msvc/JUCE_build/CMakeFiles/CMakeTmp'
+
+
+
+
+  Run Build Command(s): /usr/bin/cmake -E env VERBOSE=1 /usr/bin/gmake -f
+  Makefile cmTC_dd054/fast
+
+  /usr/bin/gmake -f CMakeFiles/cmTC_dd054.dir/build.make
+  CMakeFiles/cmTC_dd054.dir/build
+
+  gmake[1]: Entering directory
+  '/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_msvc/JUCE_build/CMakeFiles/CMakeTmp'
+
+
+  Building CXX object
+  CMakeFiles/cmTC_dd054.dir/juce_runtime_arch_detection.cpp.obj
+
+  /usr/bin/cmake -E cmake_cl_compile_depends
+  --dep-file=CMakeFiles/cmTC_dd054.dir/juce_runtime_arch_detection.cpp.obj.d
+  --working-dir=/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_msvc/JUCE_build/CMakeFiles/CMakeTmp
+  --filter-prefix="" -- "/mnt/c/Program Files (x86)/Microsoft Visual
+  Studio/2019/Community/VC/Tools/MSVC/14.29.30133/bin/Hostx64/x64/cl.exe"
+  /nologo /TP -I"/mnt/c/Program Files (x86)/Microsoft Visual
+  Studio/2019/Community/VC/Tools/MSVC/14.29.30133/include" -I"/mnt/c/Program
+  Files (x86)/Windows Kits/10/Include/10.0.19041.0/ucrt" -I"/mnt/c/Program
+  Files (x86)/Windows Kits/10/Include/10.0.19041.0/um" -I"/mnt/c/Program
+  Files (x86)/Windows Kits/10/Include/10.0.19041.0/shared" -I"/mnt/c/Program
+  Files (x86)/Windows Kits/10/Include/10.0.19041.0/winrt" -I"/mnt/c/Program
+  Files (x86)/Windows Kits/10/Include/10.0.19041.0/cppwinrt" /DWIN32=1
+  /D_WINDOWS=1 /D_WIN32=1 /D_WIN64=1 /DWIN64=1 /DJUCE_WINDOWS=1
+  /DJUCE_WASAPI=1 /DJUCE_DIRECTSOUND=1 /EHsc /MP /DWIN32=1 /D_WINDOWS=1
+  /D_WIN32=1 /D_WIN64=1 /DWIN64=1 /DJUCE_WINDOWS=1 /DJUCE_WASAPI=1
+  /DJUCE_DIRECTSOUND=1 /EHsc /MP /O2 /Ob2 /DNDEBUG -MD /showIncludes
+  /FoCMakeFiles/cmTC_dd054.dir/juce_runtime_arch_detection.cpp.obj
+  /FdCMakeFiles/cmTC_dd054.dir/cmTC_dd054.pdb /FS -c
+  /home/aguziczek/plugin_dev/JUCE/extras/Build/CMake/juce_runtime_arch_detection.cpp
+
+
+  cl : Command line warning D9002 : ignoring unknown option
+  '/home/aguziczek/plugin_dev/JUCE/extras/Build/CMake/juce_runtime_arch_detection.cpp'
+
+
+  cl : Command line error D8003 : missing source filename
+
+  gmake[1]: *** [CMakeFiles/cmTC_dd054.dir/build.make:79:
+  CMakeFiles/cmTC_dd054.dir/juce_runtime_arch_detection.cpp.obj] Error 2
+
+  gmake[1]: Leaving directory
+  '/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_msvc/JUCE_build/CMakeFiles/CMakeTmp'
+
+
+  gmake: *** [Makefile:127: cmTC_dd054/fast] Error 2
+
+
+
+Call Stack (most recent call first):
+  /home/aguziczek/plugin_dev/JUCE/extras/Build/CMake/JUCEUtils.cmake:1452 (_juce_set_plugin_target_properties)
+  /home/aguziczek/plugin_dev/JUCE/extras/Build/CMake/JUCEUtils.cmake:1589 (_juce_link_plugin_wrapper)
+  /home/aguziczek/plugin_dev/JUCE/extras/Build/CMake/JUCEUtils.cmake:2182 (_juce_configure_plugin_targets)
+  CMakeLists.txt:37 (juce_add_plugin)
+
+
+-- Configuring incomplete, errors occurred!
+CMake Warning:
+  Value of JUCE_TARGET_ARCHITECTURE contained a newline; truncating
+
+
+[0;31m[ERROR][0m CMake configuration failed.
+[0;31m[ERROR][0m CMake configuration failed.

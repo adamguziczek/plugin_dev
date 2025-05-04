@@ -1,0 +1,14 @@
+VolumeControlPlugin Windows MSVC Build Log (20250503_174626)
+====================================================
+
+[0;34m=============================================[0m
+[0;34m=============================================[0m
+[0;34m  VolumeControlPlugin Windows MSVC Build Script   [0m
+[0;34m  VolumeControlPlugin Windows MSVC Build Script   [0m
+[0;34m=============================================[0m
+[0;34m=============================================[0m
+[0;34m[INFO][0m Checking prerequisites for Windows MSVC cross-compilation...
+[0;34m[INFO][0m Checking prerequisites for Windows MSVC cross-compilation...
+[0;31m[ERROR][0m This script is designed to run in Windows Subsystem for Linux (WSL).
+[0;31m[ERROR][0m This script is designed to run in Windows Subsystem for Linux (WSL).
+The MSVC cross-compilation requires access to Visual Studio installed on Windows.

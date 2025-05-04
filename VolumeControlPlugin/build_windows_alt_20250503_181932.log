@@ -1,0 +1,230 @@
+VolumeControlPlugin Windows Alt Build Log (20250503_181932)
+====================================================
+
+[0;34m=============================================[0m
+[0;34m=============================================[0m
+[0;34m  VolumeControlPlugin Windows Alt Build Script   [0m
+[0;34m  VolumeControlPlugin Windows Alt Build Script   [0m
+[0;34m=============================================[0m
+[0;34m=============================================[0m
+[0;34m[INFO][0m Checking prerequisites for Windows cross-compilation...
+[0;34m[INFO][0m Checking prerequisites for Windows cross-compilation...
+[0;34m[INFO][0m WSL detection override enabled
+[0;34m[INFO][0m WSL detection override enabled
+[0;34m[INFO][0m Using CMake version 3.28
+[0;34m[INFO][0m Using CMake version 3.28
+[0;32m[SUCCESS][0m All prerequisites satisfied!
+[0;32m[SUCCESS][0m All prerequisites satisfied!
+[0;34m[INFO][0m Cleaning build directory...
+[0;34m[INFO][0m Cleaning build directory...
+[0;32m[SUCCESS][0m Removed existing build directory
+[0;32m[SUCCESS][0m Removed existing build directory
+[0;32m[SUCCESS][0m Created fresh build directory at /home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt
+[0;32m[SUCCESS][0m Created fresh build directory at /home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt
+[0;34m[INFO][0m Running CMake configuration with specialized Windows settings...
+[0;34m[INFO][0m Running CMake configuration with specialized Windows settings...
+[0;34m[INFO][0m Running: cmake -DCMAKE_TOOLCHAIN_FILE=/home/aguziczek/plugin_dev/VolumeControlPlugin/Windows-MSVC-WSL.cmake -DCMAKE_BUILD_TYPE=Release -DJUCE_DIR=/home/aguziczek/plugin_dev/VolumeControlPlugin/../JUCE -DCMAKE_VERBOSE_MAKEFILE=ON -DJUCE_TARGET_ARCHITECTURE=x86_64 -DVST3_ARCHITECTURE=x86_64 -DJUCE_DISABLE_RUNTIME_ARCH_DETECTION=ON -DCMAKE_INSTALL_PREFIX=/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt/install ..
+[0;34m[INFO][0m Running: cmake -DCMAKE_TOOLCHAIN_FILE=/home/aguziczek/plugin_dev/VolumeControlPlugin/Windows-MSVC-WSL.cmake -DCMAKE_BUILD_TYPE=Release -DJUCE_DIR=/home/aguziczek/plugin_dev/VolumeControlPlugin/../JUCE -DCMAKE_VERBOSE_MAKEFILE=ON -DJUCE_TARGET_ARCHITECTURE=x86_64 -DVST3_ARCHITECTURE=x86_64 -DJUCE_DISABLE_RUNTIME_ARCH_DETECTION=ON -DCMAKE_INSTALL_PREFIX=/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt/install ..
+-- MSVC Cross-Compilation Environment configured for WSL->Windows:
+--   - Architecture: x86_64
+--   - C++ Compiler: /mnt/c/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/bin/Hostx64/x64/cl.exe
+--   - Windows SDK: 10.0.19041.0
+--   - VST3 Architecture: x86_64
+-- MSVC Cross-Compilation Environment configured for WSL->Windows:
+--   - Architecture: x86_64
+--   - C++ Compiler: /mnt/c/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/bin/Hostx64/x64/cl.exe
+--   - Windows SDK: 10.0.19041.0
+--   - VST3 Architecture: x86_64
+-- The C compiler identification is MSVC 19.29.30148.0
+-- The CXX compiler identification is MSVC 19.29.30148.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - failed
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - failed
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Windows build detected, skipping Linux dependencies
+-- Configuring juceaide
+-- Building juceaide
+-- Exporting juceaide
+-- Testing juceaide
+-- Finished setting up juceaide
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
+-- Looking for pthread_create in pthreads
+-- Looking for pthread_create in pthreads - not found
+-- Looking for pthread_create in pthread
+-- Looking for pthread_create in pthread - not found
+-- Found Threads: TRUE  
+-- Configuring done (141.7s)
+-- Generating done (0.3s)
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    JUCE_DIR
+
+
+-- Build files have been written to: /home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt
+[0;32m[SUCCESS][0m CMake configuration completed successfully!
+[0;32m[SUCCESS][0m CMake configuration completed successfully!
+[0;34m[INFO][0m Building Windows VST3 plugin...
+[0;34m[INFO][0m Building Windows VST3 plugin...
+[0;34m[INFO][0m Building with 4 parallel jobs
+[0;34m[INFO][0m Building with 4 parallel jobs
+Change Dir: '/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt'
+
+Run Build Command(s): /usr/bin/cmake -E env VERBOSE=1 /usr/bin/gmake -f Makefile -j4
+/usr/bin/cmake -P /home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt/CMakeFiles/VerifyGlobs.cmake
+/usr/bin/cmake -S/home/aguziczek/plugin_dev/VolumeControlPlugin -B/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt --check-build-system CMakeFiles/Makefile.cmake 0
+/usr/bin/cmake -E cmake_progress_start /home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt/CMakeFiles /home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt//CMakeFiles/progress.marks
+/usr/bin/gmake  -f CMakeFiles/Makefile2 all
+gmake[1]: Entering directory '/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt'
+/usr/bin/gmake  -f CMakeFiles/VolumeControlPlugin.dir/build.make CMakeFiles/VolumeControlPlugin.dir/depend
+/usr/bin/gmake  -f CMakeFiles/VolumeControlPlugin_rc_lib.dir/build.make CMakeFiles/VolumeControlPlugin_rc_lib.dir/depend
+/usr/bin/gmake  -f CMakeFiles/juce_vst3_helper.dir/build.make CMakeFiles/juce_vst3_helper.dir/depend
+gmake[2]: Entering directory '/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt'
+gmake[2]: Entering directory '/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt'
+gmake[2]: Entering directory '/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt'
+cd /home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt && /usr/bin/cmake -E cmake_depends "Unix Makefiles" /home/aguziczek/plugin_dev/VolumeControlPlugin /home/aguziczek/plugin_dev/VolumeControlPlugin /home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt /home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt /home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt/CMakeFiles/juce_vst3_helper.dir/DependInfo.cmake "--color="
+[  4%] Generating VolumeControlPlugin_artefacts/JuceLibraryCode/VolumeControlPlugin_resources.rc
+[  4%] Generating VolumeControlPlugin_artefacts/JuceLibraryCode/JuceHeader.h
+JUCE_build/tools/extras/Build/juceaide/juceaide_artefacts/Custom/juceaide header /home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt/VolumeControlPlugin_artefacts/JuceLibraryCode/Release/Defs.txt /home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt/VolumeControlPlugin_artefacts/JuceLibraryCode/JuceHeader.h
+JUCE_build/tools/extras/Build/juceaide/juceaide_artefacts/Custom/juceaide rcfile /home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt/VolumeControlPlugin_artefacts/JuceLibraryCode/Info.txt /home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt/VolumeControlPlugin_artefacts/JuceLibraryCode/VolumeControlPlugin_resources.rc
+gmake[2]: Leaving directory '/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt'
+/usr/bin/gmake  -f CMakeFiles/juce_vst3_helper.dir/build.make CMakeFiles/juce_vst3_helper.dir/build
+gmake[2]: Entering directory '/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt'
+cd /home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt && /usr/bin/cmake -E cmake_depends "Unix Makefiles" /home/aguziczek/plugin_dev/VolumeControlPlugin /home/aguziczek/plugin_dev/VolumeControlPlugin /home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt /home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt /home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt/CMakeFiles/VolumeControlPlugin_rc_lib.dir/DependInfo.cmake "--color="
+cd /home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt && /usr/bin/cmake -E cmake_depends "Unix Makefiles" /home/aguziczek/plugin_dev/VolumeControlPlugin /home/aguziczek/plugin_dev/VolumeControlPlugin /home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt /home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt /home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt/CMakeFiles/VolumeControlPlugin.dir/DependInfo.cmake "--color="
+Dependee "/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt/CMakeFiles/VolumeControlPlugin_rc_lib.dir/DependInfo.cmake" is newer than depender "/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt/CMakeFiles/VolumeControlPlugin_rc_lib.dir/depend.internal".
+Dependee "/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt/CMakeFiles/CMakeDirectoryInformation.cmake" is newer than depender "/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt/CMakeFiles/VolumeControlPlugin_rc_lib.dir/depend.internal".
+[  7%] Building CXX object CMakeFiles/juce_vst3_helper.dir/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_plugin_client/VST3/juce_VST3ManifestHelper.cpp.obj
+/usr/bin/cmake -E cmake_cl_compile_depends --dep-file=CMakeFiles/juce_vst3_helper.dir/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_plugin_client/VST3/juce_VST3ManifestHelper.cpp.obj.d --working-dir=/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt --filter-prefix="" -- "/mnt/c/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/bin/Hostx64/x64/cl.exe"   /TP -DJUCE_GLOBAL_MODULE_SETTINGS_INCLUDED=1 -DNDEBUG=1 -D_NDEBUG=1 -I"/mnt/c/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/include" -I"/mnt/c/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/ucrt" -I"/mnt/c/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/um" -I"/mnt/c/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/shared" -I"/mnt/c/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/winrt" -I"/mnt/c/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/cppwinrt" -I/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/format_types/VST3_SDK -I/home/aguziczek/plugin_dev/JUCE/modules /DWIN32=1;/D_WINDOWS=1;/D_WIN32=1;/D_WIN64=1;/DWIN64=1;/DJUCE_WINDOWS=1;/DJUCE_WASAPI=1;/DJUCE_DIRECTSOUND=1;/nologo;/EHsc;/MP;/W4;/wd4996;/wd4267;/bigobj /O2 /Ob2 /DNDEBUG /GL -std:c++17 -MD /Ox /MP /EHsc /showIncludes /FoCMakeFiles/juce_vst3_helper.dir/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_plugin_client/VST3/juce_VST3ManifestHelper.cpp.obj /FdCMakeFiles/juce_vst3_helper.dir/ /FS -c /home/aguziczek/plugin_dev/JUCE/modules/juce_audio_plugin_client/VST3/juce_VST3ManifestHelper.cpp
+gmake[2]: Leaving directory '/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt'
+/usr/bin/gmake  -f CMakeFiles/VolumeControlPlugin.dir/build.make CMakeFiles/VolumeControlPlugin.dir/build
+gmake[2]: Entering directory '/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt'
+[  9%] Building CXX object CMakeFiles/VolumeControlPlugin.dir/Source/PluginProcessor.cpp.obj
+[ 11%] Building CXX object CMakeFiles/VolumeControlPlugin.dir/Source/PluginEditor.cpp.obj
+/usr/bin/cmake -E cmake_cl_compile_depends --dep-file=CMakeFiles/VolumeControlPlugin.dir/Source/PluginProcessor.cpp.obj.d --working-dir=/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt --filter-prefix="" -- "/mnt/c/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/bin/Hostx64/x64/cl.exe"   /TP -DJUCE_GLOBAL_MODULE_SETTINGS_INCLUDED=1 -DJUCE_MODULE_AVAILABLE_juce_audio_basics=1 -DJUCE_MODULE_AVAILABLE_juce_audio_devices=1 -DJUCE_MODULE_AVAILABLE_juce_audio_formats=1 -DJUCE_MODULE_AVAILABLE_juce_audio_plugin_client=1 -DJUCE_MODULE_AVAILABLE_juce_audio_processors=1 -DJUCE_MODULE_AVAILABLE_juce_audio_utils=1 -DJUCE_MODULE_AVAILABLE_juce_core=1 -DJUCE_MODULE_AVAILABLE_juce_data_structures=1 -DJUCE_MODULE_AVAILABLE_juce_events=1 -DJUCE_MODULE_AVAILABLE_juce_graphics=1 -DJUCE_MODULE_AVAILABLE_juce_gui_basics=1 -DJUCE_MODULE_AVAILABLE_juce_gui_extra=1 -DJUCE_SHARED_CODE=1 -DJUCE_STANDALONE_APPLICATION=JucePlugin_Build_Standalone -DJucePlugin_AAXCategory=0 -DJucePlugin_AAXDisableBypass=0 -DJucePlugin_AAXDisableMultiMono=0 -DJucePlugin_AAXIdentifier=com.YourCompany.VolumeControlPlugin -DJucePlugin_AAXManufacturerCode=JucePlugin_ManufacturerCode -DJucePlugin_AAXProductId=JucePlugin_PluginCode -DJucePlugin_ARACompatibleArchiveIDs=\"\" -DJucePlugin_ARAContentTypes=0 -DJucePlugin_ARADocumentArchiveID=\"com.YourCompany.VolumeControlPlugin.aradocumentarchive.1\" -DJucePlugin_ARAFactoryID=\"com.YourCompany.VolumeControlPlugin.arafactory.1.0.0\" -DJucePlugin_ARATransformationFlags=0 -DJucePlugin_AUExportPrefix=Volume_Control_PluginAU -DJucePlugin_AUExportPrefixQuoted=\"Volume_Control_PluginAU\" -DJucePlugin_AUMainType="'aufx'" -DJucePlugin_AUManufacturerCode=JucePlugin_ManufacturerCode -DJucePlugin_AUSubType=JucePlugin_PluginCode -DJucePlugin_Build_AAX=0 -DJucePlugin_Build_AU=0 -DJucePlugin_Build_AUv3=0 -DJucePlugin_Build_LV2=0 -DJucePlugin_Build_Standalone=1 -DJucePlugin_Build_Unity=0 -DJucePlugin_Build_VST3=1 -DJucePlugin_Build_VST=0 -DJucePlugin_CFBundleIdentifier=com.YourCompany.VolumeControlPlugin -DJucePlugin_Desc="\"Volume Control Plugin\"" -DJucePlugin_EditorRequiresKeyboardFocus=0 -DJucePlugin_Enable_ARA=0 -DJucePlugin_IsMidiEffect=0 -DJucePlugin_IsSynth=0 -DJucePlugin_Manufacturer=\"YourCompany\" -DJucePlugin_ManufacturerCode=0x4a756365 -DJucePlugin_ManufacturerEmail=\"\" -DJucePlugin_ManufacturerWebsite=\"\" -DJucePlugin_Name="\"Volume Control Plugin\"" -DJucePlugin_PluginCode=0x5663706c -DJucePlugin_ProducesMidiOutput=0 -DJucePlugin_VSTCategory=kPlugCategEffect -DJucePlugin_VSTNumMidiInputs=16 -DJucePlugin_VSTNumMidiOutputs=16 -DJucePlugin_VSTUniqueID=JucePlugin_PluginCode -DJucePlugin_Version=1.0.0 -DJucePlugin_VersionCode=0x10000 -DJucePlugin_VersionString=\"1.0.0\" -DJucePlugin_Vst3Category=\"Fx\" -DJucePlugin_WantsMidiInput=0 -DNDEBUG=1 -D_NDEBUG=1 -I"/mnt/c/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/include" -I"/mnt/c/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/ucrt" -I"/mnt/c/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/um" -I"/mnt/c/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/shared" -I"/mnt/c/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/winrt" -I"/mnt/c/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/cppwinrt" -I/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt/VolumeControlPlugin_artefacts/JuceLibraryCode -I/home/aguziczek/plugin_dev/VolumeControlPlugin/Source -I/home/aguziczek/plugin_dev/JUCE/modules -I/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/format_types/VST3_SDK -I/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/format_types/LV2_SDK -I/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/format_types/LV2_SDK/lv2 -I/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/format_types/LV2_SDK/serd -I/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/format_types/LV2_SDK/sord -I/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/format_types/LV2_SDK/sord/src -I/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/format_types/LV2_SDK/sratom -I/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/format_types/LV2_SDK/lilv -I/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/format_types/LV2_SDK/lilv/src /DWIN32=1;/D_WINDOWS=1;/D_WIN32=1;/D_WIN64=1;/DWIN64=1;/DJUCE_WINDOWS=1;/DJUCE_WASAPI=1;/DJUCE_DIRECTSOUND=1;/nologo;/EHsc;/MP;/W4;/wd4996;/wd4267;/bigobj /O2 /Ob2 /DNDEBUG /GL -std:c++17 -MD /W4 /bigobj /wd4996 /wd4267 /Ox /MP /EHsc -GL /showIncludes /FoCMakeFiles/VolumeControlPlugin.dir/Source/PluginProcessor.cpp.obj /FdCMakeFiles/VolumeControlPlugin.dir/VolumeControlPlugin.pdb /FS -c /home/aguziczek/plugin_dev/VolumeControlPlugin/Source/PluginProcessor.cpp
+/usr/bin/cmake -E cmake_cl_compile_depends --dep-file=CMakeFiles/VolumeControlPlugin.dir/Source/PluginEditor.cpp.obj.d --working-dir=/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt --filter-prefix="" -- "/mnt/c/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/bin/Hostx64/x64/cl.exe"   /TP -DJUCE_GLOBAL_MODULE_SETTINGS_INCLUDED=1 -DJUCE_MODULE_AVAILABLE_juce_audio_basics=1 -DJUCE_MODULE_AVAILABLE_juce_audio_devices=1 -DJUCE_MODULE_AVAILABLE_juce_audio_formats=1 -DJUCE_MODULE_AVAILABLE_juce_audio_plugin_client=1 -DJUCE_MODULE_AVAILABLE_juce_audio_processors=1 -DJUCE_MODULE_AVAILABLE_juce_audio_utils=1 -DJUCE_MODULE_AVAILABLE_juce_core=1 -DJUCE_MODULE_AVAILABLE_juce_data_structures=1 -DJUCE_MODULE_AVAILABLE_juce_events=1 -DJUCE_MODULE_AVAILABLE_juce_graphics=1 -DJUCE_MODULE_AVAILABLE_juce_gui_basics=1 -DJUCE_MODULE_AVAILABLE_juce_gui_extra=1 -DJUCE_SHARED_CODE=1 -DJUCE_STANDALONE_APPLICATION=JucePlugin_Build_Standalone -DJucePlugin_AAXCategory=0 -DJucePlugin_AAXDisableBypass=0 -DJucePlugin_AAXDisableMultiMono=0 -DJucePlugin_AAXIdentifier=com.YourCompany.VolumeControlPlugin -DJucePlugin_AAXManufacturerCode=JucePlugin_ManufacturerCode -DJucePlugin_AAXProductId=JucePlugin_PluginCode -DJucePlugin_ARACompatibleArchiveIDs=\"\" -DJucePlugin_ARAContentTypes=0 -DJucePlugin_ARADocumentArchiveID=\"com.YourCompany.VolumeControlPlugin.aradocumentarchive.1\" -DJucePlugin_ARAFactoryID=\"com.YourCompany.VolumeControlPlugin.arafactory.1.0.0\" -DJucePlugin_ARATransformationFlags=0 -DJucePlugin_AUExportPrefix=Volume_Control_PluginAU -DJucePlugin_AUExportPrefixQuoted=\"Volume_Control_PluginAU\" -DJucePlugin_AUMainType="'aufx'" -DJucePlugin_AUManufacturerCode=JucePlugin_ManufacturerCode -DJucePlugin_AUSubType=JucePlugin_PluginCode -DJucePlugin_Build_AAX=0 -DJucePlugin_Build_AU=0 -DJucePlugin_Build_AUv3=0 -DJucePlugin_Build_LV2=0 -DJucePlugin_Build_Standalone=1 -DJucePlugin_Build_Unity=0 -DJucePlugin_Build_VST3=1 -DJucePlugin_Build_VST=0 -DJucePlugin_CFBundleIdentifier=com.YourCompany.VolumeControlPlugin -DJucePlugin_Desc="\"Volume Control Plugin\"" -DJucePlugin_EditorRequiresKeyboardFocus=0 -DJucePlugin_Enable_ARA=0 -DJucePlugin_IsMidiEffect=0 -DJucePlugin_IsSynth=0 -DJucePlugin_Manufacturer=\"YourCompany\" -DJucePlugin_ManufacturerCode=0x4a756365 -DJucePlugin_ManufacturerEmail=\"\" -DJucePlugin_ManufacturerWebsite=\"\" -DJucePlugin_Name="\"Volume Control Plugin\"" -DJucePlugin_PluginCode=0x5663706c -DJucePlugin_ProducesMidiOutput=0 -DJucePlugin_VSTCategory=kPlugCategEffect -DJucePlugin_VSTNumMidiInputs=16 -DJucePlugin_VSTNumMidiOutputs=16 -DJucePlugin_VSTUniqueID=JucePlugin_PluginCode -DJucePlugin_Version=1.0.0 -DJucePlugin_VersionCode=0x10000 -DJucePlugin_VersionString=\"1.0.0\" -DJucePlugin_Vst3Category=\"Fx\" -DJucePlugin_WantsMidiInput=0 -DNDEBUG=1 -D_NDEBUG=1 -I"/mnt/c/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/include" -I"/mnt/c/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/ucrt" -I"/mnt/c/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/um" -I"/mnt/c/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/shared" -I"/mnt/c/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/winrt" -I"/mnt/c/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/cppwinrt" -I/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt/VolumeControlPlugin_artefacts/JuceLibraryCode -I/home/aguziczek/plugin_dev/VolumeControlPlugin/Source -I/home/aguziczek/plugin_dev/JUCE/modules -I/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/format_types/VST3_SDK -I/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/format_types/LV2_SDK -I/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/format_types/LV2_SDK/lv2 -I/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/format_types/LV2_SDK/serd -I/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/format_types/LV2_SDK/sord -I/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/format_types/LV2_SDK/sord/src -I/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/format_types/LV2_SDK/sratom -I/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/format_types/LV2_SDK/lilv -I/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/format_types/LV2_SDK/lilv/src /DWIN32=1;/D_WINDOWS=1;/D_WIN32=1;/D_WIN64=1;/DWIN64=1;/DJUCE_WINDOWS=1;/DJUCE_WASAPI=1;/DJUCE_DIRECTSOUND=1;/nologo;/EHsc;/MP;/W4;/wd4996;/wd4267;/bigobj /O2 /Ob2 /DNDEBUG /GL -std:c++17 -MD /W4 /bigobj /wd4996 /wd4267 /Ox /MP /EHsc -GL /showIncludes /FoCMakeFiles/VolumeControlPlugin.dir/Source/PluginEditor.cpp.obj /FdCMakeFiles/VolumeControlPlugin.dir/VolumeControlPlugin.pdb /FS -c /home/aguziczek/plugin_dev/VolumeControlPlugin/Source/PluginEditor.cpp
+Scanning dependencies of target VolumeControlPlugin_rc_lib
+gmake[2]: Leaving directory '/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt'
+/usr/bin/gmake  -f CMakeFiles/VolumeControlPlugin_rc_lib.dir/build.make CMakeFiles/VolumeControlPlugin_rc_lib.dir/build
+gmake[2]: Entering directory '/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt'
+[ 14%] Building RC object CMakeFiles/VolumeControlPlugin_rc_lib.dir/VolumeControlPlugin_artefacts/JuceLibraryCode/VolumeControlPlugin_resources.rc.res
+"/mnt/c/Program Files (x86)/Windows Kits/10/bin/10.0.19041.0/x64/rc.exe"  -I "/mnt/c/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/include" -I "/mnt/c/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/ucrt" -I "/mnt/c/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/um" -I "/mnt/c/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/shared" -I "/mnt/c/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/winrt" -I "/mnt/c/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/cppwinrt" -DWIN32 /fo CMakeFiles/VolumeControlPlugin_rc_lib.dir/VolumeControlPlugin_artefacts/JuceLibraryCode/VolumeControlPlugin_resources.rc.res /home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt/VolumeControlPlugin_artefacts/JuceLibraryCode/VolumeControlPlugin_resources.rc
+/bin/sh: 1: /mnt/c/Program Files (x86)/Windows Kits/10/bin/10.0.19041.0/x64/rc.exe: not found
+gmake[2]: *** [CMakeFiles/VolumeControlPlugin_rc_lib.dir/build.make:82: CMakeFiles/VolumeControlPlugin_rc_lib.dir/VolumeControlPlugin_artefacts/JuceLibraryCode/VolumeControlPlugin_resources.rc.res] Error 127
+gmake[2]: Leaving directory '/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt'
+gmake[1]: *** [CMakeFiles/Makefile2:240: CMakeFiles/VolumeControlPlugin_rc_lib.dir/all] Error 2
+gmake[1]: *** Waiting for unfinished jobs....
+[ 16%] Building CXX object CMakeFiles/VolumeControlPlugin.dir/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/juce_audio_processors.cpp.obj
+/usr/bin/cmake -E cmake_cl_compile_depends --dep-file=CMakeFiles/VolumeControlPlugin.dir/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/juce_audio_processors.cpp.obj.d --working-dir=/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt --filter-prefix="" -- "/mnt/c/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/bin/Hostx64/x64/cl.exe"   /TP -DJUCE_GLOBAL_MODULE_SETTINGS_INCLUDED=1 -DJUCE_MODULE_AVAILABLE_juce_audio_basics=1 -DJUCE_MODULE_AVAILABLE_juce_audio_devices=1 -DJUCE_MODULE_AVAILABLE_juce_audio_formats=1 -DJUCE_MODULE_AVAILABLE_juce_audio_plugin_client=1 -DJUCE_MODULE_AVAILABLE_juce_audio_processors=1 -DJUCE_MODULE_AVAILABLE_juce_audio_utils=1 -DJUCE_MODULE_AVAILABLE_juce_core=1 -DJUCE_MODULE_AVAILABLE_juce_data_structures=1 -DJUCE_MODULE_AVAILABLE_juce_events=1 -DJUCE_MODULE_AVAILABLE_juce_graphics=1 -DJUCE_MODULE_AVAILABLE_juce_gui_basics=1 -DJUCE_MODULE_AVAILABLE_juce_gui_extra=1 -DJUCE_SHARED_CODE=1 -DJUCE_STANDALONE_APPLICATION=JucePlugin_Build_Standalone -DJucePlugin_AAXCategory=0 -DJucePlugin_AAXDisableBypass=0 -DJucePlugin_AAXDisableMultiMono=0 -DJucePlugin_AAXIdentifier=com.YourCompany.VolumeControlPlugin -DJucePlugin_AAXManufacturerCode=JucePlugin_ManufacturerCode -DJucePlugin_AAXProductId=JucePlugin_PluginCode -DJucePlugin_ARACompatibleArchiveIDs=\"\" -DJucePlugin_ARAContentTypes=0 -DJucePlugin_ARADocumentArchiveID=\"com.YourCompany.VolumeControlPlugin.aradocumentarchive.1\" -DJucePlugin_ARAFactoryID=\"com.YourCompany.VolumeControlPlugin.arafactory.1.0.0\" -DJucePlugin_ARATransformationFlags=0 -DJucePlugin_AUExportPrefix=Volume_Control_PluginAU -DJucePlugin_AUExportPrefixQuoted=\"Volume_Control_PluginAU\" -DJucePlugin_AUMainType="'aufx'" -DJucePlugin_AUManufacturerCode=JucePlugin_ManufacturerCode -DJucePlugin_AUSubType=JucePlugin_PluginCode -DJucePlugin_Build_AAX=0 -DJucePlugin_Build_AU=0 -DJucePlugin_Build_AUv3=0 -DJucePlugin_Build_LV2=0 -DJucePlugin_Build_Standalone=1 -DJucePlugin_Build_Unity=0 -DJucePlugin_Build_VST3=1 -DJucePlugin_Build_VST=0 -DJucePlugin_CFBundleIdentifier=com.YourCompany.VolumeControlPlugin -DJucePlugin_Desc="\"Volume Control Plugin\"" -DJucePlugin_EditorRequiresKeyboardFocus=0 -DJucePlugin_Enable_ARA=0 -DJucePlugin_IsMidiEffect=0 -DJucePlugin_IsSynth=0 -DJucePlugin_Manufacturer=\"YourCompany\" -DJucePlugin_ManufacturerCode=0x4a756365 -DJucePlugin_ManufacturerEmail=\"\" -DJucePlugin_ManufacturerWebsite=\"\" -DJucePlugin_Name="\"Volume Control Plugin\"" -DJucePlugin_PluginCode=0x5663706c -DJucePlugin_ProducesMidiOutput=0 -DJucePlugin_VSTCategory=kPlugCategEffect -DJucePlugin_VSTNumMidiInputs=16 -DJucePlugin_VSTNumMidiOutputs=16 -DJucePlugin_VSTUniqueID=JucePlugin_PluginCode -DJucePlugin_Version=1.0.0 -DJucePlugin_VersionCode=0x10000 -DJucePlugin_VersionString=\"1.0.0\" -DJucePlugin_Vst3Category=\"Fx\" -DJucePlugin_WantsMidiInput=0 -DNDEBUG=1 -D_NDEBUG=1 -I"/mnt/c/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/include" -I"/mnt/c/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/ucrt" -I"/mnt/c/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/um" -I"/mnt/c/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/shared" -I"/mnt/c/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/winrt" -I"/mnt/c/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/cppwinrt" -I/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt/VolumeControlPlugin_artefacts/JuceLibraryCode -I/home/aguziczek/plugin_dev/VolumeControlPlugin/Source -I/home/aguziczek/plugin_dev/JUCE/modules -I/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/format_types/VST3_SDK -I/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/format_types/LV2_SDK -I/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/format_types/LV2_SDK/lv2 -I/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/format_types/LV2_SDK/serd -I/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/format_types/LV2_SDK/sord -I/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/format_types/LV2_SDK/sord/src -I/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/format_types/LV2_SDK/sratom -I/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/format_types/LV2_SDK/lilv -I/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/format_types/LV2_SDK/lilv/src /DWIN32=1;/D_WINDOWS=1;/D_WIN32=1;/D_WIN64=1;/DWIN64=1;/DJUCE_WINDOWS=1;/DJUCE_WASAPI=1;/DJUCE_DIRECTSOUND=1;/nologo;/EHsc;/MP;/W4;/wd4996;/wd4267;/bigobj /O2 /Ob2 /DNDEBUG /GL -std:c++17 -MD /W4 /bigobj /wd4996 /wd4267 /Ox /MP /EHsc -GL /showIncludes /FoCMakeFiles/VolumeControlPlugin.dir/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/juce_audio_processors.cpp.obj /FdCMakeFiles/VolumeControlPlugin.dir/VolumeControlPlugin.pdb /FS -c /home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/juce_audio_processors.cpp
+Microsoft (R) C/C++ Optimizing Compiler Version 19.29.30148 for x64
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+cl : Command line error D8003 : missing source filename
+/bin/sh: 1: /D_WINDOWS=1: not found
+/bin/sh: 1: /D_WIN32=1: not found
+/bin/sh: 1: /D_WIN64=1: not found
+/bin/sh: 1: /DWIN64=1: not found
+/bin/sh: 1: /DJUCE_WINDOWS=1: not found
+/bin/sh: 1: /DJUCE_WASAPI=1: not found
+/bin/sh: 1: /DJUCE_DIRECTSOUND=1: not found
+/bin/sh: 1: /nologo: not found
+/bin/sh: 1: /EHsc: not found
+/bin/sh: 1: /MP: not found
+/bin/sh: 1: /W4: not found
+/bin/sh: 1: /wd4996: not found
+/bin/sh: 1: /wd4267: not found
+/bin/sh: 1: /bigobj: not found
+gmake[2]: *** [CMakeFiles/juce_vst3_helper.dir/build.make:79: CMakeFiles/juce_vst3_helper.dir/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_plugin_client/VST3/juce_VST3ManifestHelper.cpp.obj] Error 127
+gmake[2]: Leaving directory '/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt'
+gmake[1]: *** [CMakeFiles/Makefile2:294: CMakeFiles/juce_vst3_helper.dir/all] Error 2
+[ 19%] Building CXX object CMakeFiles/VolumeControlPlugin.dir/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/juce_audio_processors_ara.cpp.obj
+/usr/bin/cmake -E cmake_cl_compile_depends --dep-file=CMakeFiles/VolumeControlPlugin.dir/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/juce_audio_processors_ara.cpp.obj.d --working-dir=/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt --filter-prefix="" -- "/mnt/c/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/bin/Hostx64/x64/cl.exe"   /TP -DJUCE_GLOBAL_MODULE_SETTINGS_INCLUDED=1 -DJUCE_MODULE_AVAILABLE_juce_audio_basics=1 -DJUCE_MODULE_AVAILABLE_juce_audio_devices=1 -DJUCE_MODULE_AVAILABLE_juce_audio_formats=1 -DJUCE_MODULE_AVAILABLE_juce_audio_plugin_client=1 -DJUCE_MODULE_AVAILABLE_juce_audio_processors=1 -DJUCE_MODULE_AVAILABLE_juce_audio_utils=1 -DJUCE_MODULE_AVAILABLE_juce_core=1 -DJUCE_MODULE_AVAILABLE_juce_data_structures=1 -DJUCE_MODULE_AVAILABLE_juce_events=1 -DJUCE_MODULE_AVAILABLE_juce_graphics=1 -DJUCE_MODULE_AVAILABLE_juce_gui_basics=1 -DJUCE_MODULE_AVAILABLE_juce_gui_extra=1 -DJUCE_SHARED_CODE=1 -DJUCE_STANDALONE_APPLICATION=JucePlugin_Build_Standalone -DJucePlugin_AAXCategory=0 -DJucePlugin_AAXDisableBypass=0 -DJucePlugin_AAXDisableMultiMono=0 -DJucePlugin_AAXIdentifier=com.YourCompany.VolumeControlPlugin -DJucePlugin_AAXManufacturerCode=JucePlugin_ManufacturerCode -DJucePlugin_AAXProductId=JucePlugin_PluginCode -DJucePlugin_ARACompatibleArchiveIDs=\"\" -DJucePlugin_ARAContentTypes=0 -DJucePlugin_ARADocumentArchiveID=\"com.YourCompany.VolumeControlPlugin.aradocumentarchive.1\" -DJucePlugin_ARAFactoryID=\"com.YourCompany.VolumeControlPlugin.arafactory.1.0.0\" -DJucePlugin_ARATransformationFlags=0 -DJucePlugin_AUExportPrefix=Volume_Control_PluginAU -DJucePlugin_AUExportPrefixQuoted=\"Volume_Control_PluginAU\" -DJucePlugin_AUMainType="'aufx'" -DJucePlugin_AUManufacturerCode=JucePlugin_ManufacturerCode -DJucePlugin_AUSubType=JucePlugin_PluginCode -DJucePlugin_Build_AAX=0 -DJucePlugin_Build_AU=0 -DJucePlugin_Build_AUv3=0 -DJucePlugin_Build_LV2=0 -DJucePlugin_Build_Standalone=1 -DJucePlugin_Build_Unity=0 -DJucePlugin_Build_VST3=1 -DJucePlugin_Build_VST=0 -DJucePlugin_CFBundleIdentifier=com.YourCompany.VolumeControlPlugin -DJucePlugin_Desc="\"Volume Control Plugin\"" -DJucePlugin_EditorRequiresKeyboardFocus=0 -DJucePlugin_Enable_ARA=0 -DJucePlugin_IsMidiEffect=0 -DJucePlugin_IsSynth=0 -DJucePlugin_Manufacturer=\"YourCompany\" -DJucePlugin_ManufacturerCode=0x4a756365 -DJucePlugin_ManufacturerEmail=\"\" -DJucePlugin_ManufacturerWebsite=\"\" -DJucePlugin_Name="\"Volume Control Plugin\"" -DJucePlugin_PluginCode=0x5663706c -DJucePlugin_ProducesMidiOutput=0 -DJucePlugin_VSTCategory=kPlugCategEffect -DJucePlugin_VSTNumMidiInputs=16 -DJucePlugin_VSTNumMidiOutputs=16 -DJucePlugin_VSTUniqueID=JucePlugin_PluginCode -DJucePlugin_Version=1.0.0 -DJucePlugin_VersionCode=0x10000 -DJucePlugin_VersionString=\"1.0.0\" -DJucePlugin_Vst3Category=\"Fx\" -DJucePlugin_WantsMidiInput=0 -DNDEBUG=1 -D_NDEBUG=1 -I"/mnt/c/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/include" -I"/mnt/c/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/ucrt" -I"/mnt/c/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/um" -I"/mnt/c/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/shared" -I"/mnt/c/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/winrt" -I"/mnt/c/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/cppwinrt" -I/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt/VolumeControlPlugin_artefacts/JuceLibraryCode -I/home/aguziczek/plugin_dev/VolumeControlPlugin/Source -I/home/aguziczek/plugin_dev/JUCE/modules -I/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/format_types/VST3_SDK -I/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/format_types/LV2_SDK -I/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/format_types/LV2_SDK/lv2 -I/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/format_types/LV2_SDK/serd -I/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/format_types/LV2_SDK/sord -I/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/format_types/LV2_SDK/sord/src -I/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/format_types/LV2_SDK/sratom -I/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/format_types/LV2_SDK/lilv -I/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/format_types/LV2_SDK/lilv/src /DWIN32=1;/D_WINDOWS=1;/D_WIN32=1;/D_WIN64=1;/DWIN64=1;/DJUCE_WINDOWS=1;/DJUCE_WASAPI=1;/DJUCE_DIRECTSOUND=1;/nologo;/EHsc;/MP;/W4;/wd4996;/wd4267;/bigobj /O2 /Ob2 /DNDEBUG /GL -std:c++17 -MD /W4 /bigobj /wd4996 /wd4267 /Ox /MP /EHsc -GL /showIncludes /FoCMakeFiles/VolumeControlPlugin.dir/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/juce_audio_processors_ara.cpp.obj /FdCMakeFiles/VolumeControlPlugin.dir/VolumeControlPlugin.pdb /FS -c /home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/juce_audio_processors_ara.cpp
+Microsoft (R) C/C++ Optimizing Compiler Version 19.29.30148 for x64
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+cl : Command line error D8003 : missing source filename
+/bin/sh: 1: /D_WINDOWS=1: not found
+/bin/sh: 1: /D_WIN32=1: not found
+/bin/sh: 1: /D_WIN64=1: not found
+/bin/sh: 1: /DWIN64=1: not found
+/bin/sh: 1: /DJUCE_WINDOWS=1: not found
+/bin/sh: 1: /DJUCE_WASAPI=1: not found
+/bin/sh: 1: /DJUCE_DIRECTSOUND=1: not found
+/bin/sh: 1: /nologo: not found
+/bin/sh: 1: /EHsc: not found
+/bin/sh: 1: /MP: not found
+/bin/sh: 1: /W4: not found
+/bin/sh: 1: /wd4996: not found
+/bin/sh: 1: /wd4267: not found
+/bin/sh: 1: /bigobj: not found
+gmake[2]: *** [CMakeFiles/VolumeControlPlugin.dir/build.make:97: CMakeFiles/VolumeControlPlugin.dir/Source/PluginEditor.cpp.obj] Error 127
+gmake[2]: *** Waiting for unfinished jobs....
+Microsoft (R) C/C++ Optimizing Compiler Version 19.29.30148 for x64
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+cl : Command line error D8003 : missing source filename
+/bin/sh: 1: /D_WINDOWS=1: not found
+/bin/sh: 1: /D_WIN32=1: not found
+/bin/sh: 1: /D_WIN64=1: not found
+/bin/sh: 1: /DWIN64=1: not found
+/bin/sh: 1: /DJUCE_WINDOWS=1: not found
+/bin/sh: 1: /DJUCE_WASAPI=1: not found
+/bin/sh: 1: /DJUCE_DIRECTSOUND=1: not found
+/bin/sh: 1: /nologo: not found
+/bin/sh: 1: /EHsc: not found
+/bin/sh: 1: /MP: not found
+/bin/sh: 1: /W4: not found
+/bin/sh: 1: /wd4996: not found
+/bin/sh: 1: /wd4267: not found
+/bin/sh: 1: /bigobj: not found
+gmake[2]: *** [CMakeFiles/VolumeControlPlugin.dir/build.make:83: CMakeFiles/VolumeControlPlugin.dir/Source/PluginProcessor.cpp.obj] Error 127
+Microsoft (R) C/C++ Optimizing Compiler Version 19.29.30148 for x64
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+cl : Command line error D8003 : missing source filename
+/bin/sh: 1: /D_WINDOWS=1: not found
+/bin/sh: 1: /D_WIN32=1: not found
+/bin/sh: 1: /D_WIN64=1: not found
+/bin/sh: 1: /DWIN64=1: not found
+/bin/sh: 1: /DJUCE_WINDOWS=1: not found
+/bin/sh: 1: /DJUCE_WASAPI=1: not found
+/bin/sh: 1: /DJUCE_DIRECTSOUND=1: not found
+/bin/sh: 1: /nologo: not found
+/bin/sh: 1: /EHsc: not found
+/bin/sh: 1: /MP: not found
+/bin/sh: 1: /W4: not found
+/bin/sh: 1: /wd4996: not found
+/bin/sh: 1: /wd4267: not found
+/bin/sh: 1: /bigobj: not found
+gmake[2]: *** [CMakeFiles/VolumeControlPlugin.dir/build.make:111: CMakeFiles/VolumeControlPlugin.dir/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/juce_audio_processors.cpp.obj] Error 127
+Microsoft (R) C/C++ Optimizing Compiler Version 19.29.30148 for x64
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+cl : Command line error D8003 : missing source filename
+/bin/sh: 1: /D_WINDOWS=1: not found
+/bin/sh: 1: /D_WIN32=1: not found
+/bin/sh: 1: /D_WIN64=1: not found
+/bin/sh: 1: /DWIN64=1: not found
+/bin/sh: 1: /DJUCE_WINDOWS=1: not found
+/bin/sh: 1: /DJUCE_WASAPI=1: not found
+/bin/sh: 1: /DJUCE_DIRECTSOUND=1: not found
+/bin/sh: 1: /nologo: not found
+/bin/sh: 1: /EHsc: not found
+/bin/sh: 1: /MP: not found
+/bin/sh: 1: /W4: not found
+/bin/sh: 1: /wd4996: not found
+/bin/sh: 1: /wd4267: not found
+/bin/sh: 1: /bigobj: not found
+gmake[2]: *** [CMakeFiles/VolumeControlPlugin.dir/build.make:125: CMakeFiles/VolumeControlPlugin.dir/home/aguziczek/plugin_dev/JUCE/modules/juce_audio_processors/juce_audio_processors_ara.cpp.obj] Error 127
+gmake[2]: Leaving directory '/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt'
+gmake[1]: *** [CMakeFiles/Makefile2:160: CMakeFiles/VolumeControlPlugin.dir/all] Error 2
+gmake[1]: Leaving directory '/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_alt'
+gmake: *** [Makefile:127: all] Error 2
+
+[0;31m[ERROR][0m Build failed.
+[0;31m[ERROR][0m Build failed.

@@ -1,0 +1,69 @@
+VolumeControlPlugin Windows MSVC Build Log (20250503_175136)
+====================================================
+
+[0;34m=============================================[0m
+[0;34m=============================================[0m
+[0;34m  VolumeControlPlugin Windows MSVC Build Script   [0m
+[0;34m  VolumeControlPlugin Windows MSVC Build Script   [0m
+[0;34m=============================================[0m
+[0;34m=============================================[0m
+[0;34m[INFO][0m Checking prerequisites for Windows MSVC cross-compilation...
+[0;34m[INFO][0m Checking prerequisites for Windows MSVC cross-compilation...
+[0;34m[INFO][0m Using CMake version 3.28
+[0;34m[INFO][0m Using CMake version 3.28
+[0;32m[SUCCESS][0m All prerequisites satisfied!
+[0;32m[SUCCESS][0m All prerequisites satisfied!
+[0;34m[INFO][0m Creating Windows MSVC build directory...
+[0;34m[INFO][0m Creating Windows MSVC build directory...
+[0;32m[SUCCESS][0m Windows MSVC build directory created at /home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_msvc
+[0;32m[SUCCESS][0m Windows MSVC build directory created at /home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_msvc
+[0;34m[INFO][0m Running CMake to configure the Windows MSVC project...
+[0;34m[INFO][0m Running CMake to configure the Windows MSVC project...
+[0;34m[INFO][0m Running: cmake -DCMAKE_TOOLCHAIN_FILE=../msvc-toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DJUCE_WINDOWS=TRUE -DJUCE_DIR=/home/aguziczek/plugin_dev/VolumeControlPlugin/../JUCE -DCMAKE_VERBOSE_MAKEFILE=ON ..
+[0;34m[INFO][0m Running: cmake -DCMAKE_TOOLCHAIN_FILE=../msvc-toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DJUCE_WINDOWS=TRUE -DJUCE_DIR=/home/aguziczek/plugin_dev/VolumeControlPlugin/../JUCE -DCMAKE_VERBOSE_MAKEFILE=ON ..
+-- MSVC toolchain configured for Windows cross-compilation
+-- C compiler: /mnt/c/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/bin/Hostx64/x64/cl.exe
+-- CXX compiler: /mnt/c/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/bin/Hostx64/x64/cl.exe
+-- MSVC toolchain configured for Windows cross-compilation
+-- C compiler: /mnt/c/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/bin/Hostx64/x64/cl.exe
+-- CXX compiler: /mnt/c/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/bin/Hostx64/x64/cl.exe
+-- The C compiler identification is MSVC 19.29.30148.0
+-- The CXX compiler identification is MSVC 19.29.30148.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - failed
+-- Check for working C compiler: /mnt/c/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/bin/Hostx64/x64/cl.exe
+-- Check for working C compiler: /mnt/c/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/bin/Hostx64/x64/cl.exe - broken
+CMake Error at /usr/share/cmake-3.28/Modules/CMakeTestCCompiler.cmake:67 (message):
+  The C compiler
+
+    "/mnt/c/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/bin/Hostx64/x64/cl.exe"
+
+  is not able to compile a simple test program.
+
+  It fails with the following output:
+
+    Change Dir: '/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_msvc/CMakeFiles/CMakeScratch/TryCompile-TQwZUw'
+    
+    Run Build Command(s): /usr/bin/cmake -E env VERBOSE=1 /usr/bin/gmake -f Makefile cmTC_7ef38/fast
+    /usr/bin/gmake  -f CMakeFiles/cmTC_7ef38.dir/build.make CMakeFiles/cmTC_7ef38.dir/build
+    gmake[1]: Entering directory '/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_msvc/CMakeFiles/CMakeScratch/TryCompile-TQwZUw'
+    Building C object CMakeFiles/cmTC_7ef38.dir/testCCompiler.c.obj
+    /usr/bin/cmake -E cmake_cl_compile_depends --dep-file=CMakeFiles/cmTC_7ef38.dir/testCCompiler.c.obj.d --working-dir=/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_msvc/CMakeFiles/CMakeScratch/TryCompile-TQwZUw --filter-prefix="" -- "/mnt/c/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/bin/Hostx64/x64/cl.exe"  /nologo  -I"/mnt/c/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/include" -I"/mnt/c/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/ucrt" -I"/mnt/c/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/um" -I"/mnt/c/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/shared" -I"/mnt/c/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/winrt" -I"/mnt/c/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/cppwinrt" /DWIN32=1 /D_WINDOWS=1 /D_WIN32=1 /D_WIN64=1 /DWIN64=1 /DJUCE_WINDOWS=1 /DJUCE_WASAPI=1 /DJUCE_DIRECTSOUND=1 /DWIN32=1 /D_WINDOWS=1 /D_WIN32=1 /D_WIN64=1 /DWIN64=1 /DJUCE_WINDOWS=1 /DJUCE_WASAPI=1 /DJUCE_DIRECTSOUND=1  /O2 /Ob2 /DNDEBUG -MD /showIncludes /FoCMakeFiles/cmTC_7ef38.dir/testCCompiler.c.obj /FdCMakeFiles/cmTC_7ef38.dir/ /FS -c /home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_msvc/CMakeFiles/CMakeScratch/TryCompile-TQwZUw/testCCompiler.c
+    cl : Command line warning D9002 : ignoring unknown option '/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_msvc/CMakeFiles/CMakeScratch/TryCompile-TQwZUw/testCCompiler.c'
+    cl : Command line error D8003 : missing source filename
+    gmake[1]: *** [CMakeFiles/cmTC_7ef38.dir/build.make:79: CMakeFiles/cmTC_7ef38.dir/testCCompiler.c.obj] Error 2
+    gmake[1]: Leaving directory '/home/aguziczek/plugin_dev/VolumeControlPlugin/build_windows_msvc/CMakeFiles/CMakeScratch/TryCompile-TQwZUw'
+    gmake: *** [Makefile:127: cmTC_7ef38/fast] Error 2
+    
+    
+
+  
+
+  CMake will not be able to correctly generate this project.
+Call Stack (most recent call first):
+  CMakeLists.txt:3 (project)
+
+
+-- Configuring incomplete, errors occurred!
+[0;31m[ERROR][0m CMake configuration failed.
+[0;31m[ERROR][0m CMake configuration failed.
