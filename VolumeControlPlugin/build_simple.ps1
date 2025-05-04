@@ -39,14 +39,14 @@ function Write-Warning {
 
 # Print header
 Write-Step "VOLUME CONTROL PLUGIN - WINDOWS BUILD SCRIPT"
-Write-ColorText "This script will build the VST3 plugin and standalone application"
+Write-ColorText "This script will build the VST3 plugin and standalone application" "White"
 
 # Check for PowerShell execution policy
 try {
     $policy = Get-ExecutionPolicy -Scope Process
     Write-ColorText "Current execution policy: $policy" "Gray"
     if ($policy -eq "Restricted" -or $policy -eq "AllSigned") {
-        Write-Warning "PowerShell execution policy may prevent this script from running."
+        Write-Warning "PowerShell execution policy may prevent this script from running"
         Write-ColorText "If you get an execution policy error, run this command first:" "Yellow"
         Write-ColorText "Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process" "Gray"
     }
@@ -75,9 +75,9 @@ elseif (Test-Path "C:\Program Files (x86)\Microsoft Visual Studio\2019") {
     Write-Success "Visual Studio 2019 found"
 }
 else {
-    Write-Error "Visual Studio 2019 or 2022 not found!"
-    Write-ColorText "Please install Visual Studio 2019 or 2022 with 'Desktop development with C++' workload."
-    Write-ColorText "Download from: https://visualstudio.microsoft.com/downloads/"
+    Write-Error "Visual Studio 2019 or 2022 not found"
+    Write-ColorText "Please install Visual Studio 2019 or 2022 with 'Desktop development with C++' workload" "White"
+    Write-ColorText "Download from: https://visualstudio.microsoft.com/downloads/" "White"
     exit 1
 }
 
@@ -87,17 +87,17 @@ try {
     Write-Success "CMake found: $cmakeVersion"
 }
 catch {
-    Write-Error "CMake not found!"
-    Write-ColorText "Please install CMake 3.15 or newer."
-    Write-ColorText "Download from: https://cmake.org/download/"
+    Write-Error "CMake not found"
+    Write-ColorText "Please install CMake 3.15 or newer" "White"
+    Write-ColorText "Download from: https://cmake.org/download/" "White"
     exit 1
 }
 
 # Check JUCE
 if (-not (Test-Path $JuceDir)) {
     Write-Error "JUCE not found at $JuceDir"
-    Write-ColorText "Please make sure the JUCE framework is in the parent directory of this project."
-    Write-ColorText "You can clone it with: git clone https://github.com/juce-framework/JUCE.git"
+    Write-ColorText "Please make sure the JUCE framework is in the parent directory of this project" "White"
+    Write-ColorText "You can clone it with: git clone https://github.com/juce-framework/JUCE.git" "White"
     exit 1
 }
 Write-Success "JUCE found at $JuceDir"
@@ -111,7 +111,7 @@ if (Test-Path $BuildDir) {
         Write-Success "Build directory cleaned"
     }
     catch {
-        Write-Warning "Could not clean build directory completely. Continuing anyway."
+        Write-Warning "Could not clean build directory completely. Continuing anyway"
     }
 }
 else {
@@ -120,7 +120,7 @@ else {
         Write-Success "Build directory created"
     }
     catch {
-        Write-Error "Failed to create build directory: $($_.Exception.Message)"
+        Write-Error "Failed to create build directory: $_"
         exit 1
     }
 }
@@ -130,9 +130,9 @@ Write-Step "Configuring with CMake"
 Push-Location $BuildDir
 
 # Create the CMake arguments array
-$cmakeConfigArgs = @(
+$cmakeArgs = @(
     "-G",
-    """$vsGenerator""",
+    "`"$vsGenerator`"",
     "-A",
     "x64",
     "-DCMAKE_BUILD_TYPE=$BuildType",
@@ -143,7 +143,7 @@ Write-ColorText "Running: cmake with Visual Studio generator" "Gray"
 
 try {
     # Run CMake configure
-    & cmake @cmakeConfigArgs
+    & cmake @cmakeArgs
     
     if ($LASTEXITCODE -ne 0) {
         Write-Error "CMake configuration failed with exit code $LASTEXITCODE"
@@ -153,7 +153,7 @@ try {
     Write-Success "CMake configuration successful"
 }
 catch {
-    Write-Error "Failed to configure with CMake: $($_.Exception.Message)"
+    Write-Error "Failed to configure with CMake: $_"
     Pop-Location
     exit 1
 }
@@ -164,7 +164,7 @@ Write-ColorText "Building in $BuildType configuration" "Yellow"
 
 try {
     # Create the build arguments array
-    $cmakeBuildArgs = @(
+    $buildArgs = @(
         "--build",
         ".",
         "--config",
@@ -174,7 +174,7 @@ try {
     Write-ColorText "Running: cmake --build . --config $BuildType" "Gray"
     
     # Run CMake build
-    & cmake @cmakeBuildArgs
+    & cmake @buildArgs
     
     if ($LASTEXITCODE -ne 0) {
         Write-Error "Build failed with exit code $LASTEXITCODE"
@@ -184,7 +184,7 @@ try {
     Write-Success "Build successful"
 }
 catch {
-    Write-Error "Failed to build project: $($_.Exception.Message)"
+    Write-Error "Failed to build project: $_"
     Pop-Location
     exit 1
 }
@@ -196,21 +196,21 @@ Write-Step "Build Results"
 # Check for VST3 plugin
 $vst3Path = Join-Path $BuildDir "VolumeControlPlugin_artefacts\$BuildType\VST3\VolumeControlPlugin.vst3"
 if (Test-Path $vst3Path) {
-    Write-Success "VST3 Plugin built successfully!"
+    Write-Success "VST3 Plugin built successfully"
     Write-ColorText "Location: $vst3Path" "White"
 }
 else {
-    Write-Error "VST3 Plugin not found at expected location. Build may have failed."
+    Write-Error "VST3 Plugin not found at expected location. Build may have failed"
 }
 
 # Check for Standalone app
 $standalonePath = Join-Path $BuildDir "VolumeControlPlugin_artefacts\$BuildType\Standalone\VolumeControlPlugin.exe"
 if (Test-Path $standalonePath) {
-    Write-Success "Standalone application built successfully!"
+    Write-Success "Standalone application built successfully"
     Write-ColorText "Location: $standalonePath" "White"
 }
 else {
-    Write-Error "Standalone application not found at expected location. Build may have failed."
+    Write-Error "Standalone application not found at expected location. Build may have failed"
 }
 
 # Instructions for using the plugin
@@ -220,9 +220,9 @@ Write-ColorText "1. Copy the .vst3 folder to your VST3 directory:" "White"
 Write-ColorText "   C:\Program Files\Common Files\VST3" "Gray"
 Write-ColorText "2. Rescan for plugins in your DAW" "White"
 Write-ColorText "3. Look for 'Volume Control Plugin' in your plugins list" "White"
-Write-ColorText ""
+Write-ColorText "" "White"
 Write-ColorText "To test the plugin without a DAW:" "White"
 Write-ColorText "Run the standalone application:" "White"
 Write-ColorText "   $standalonePath" "Gray"
 
-Write-Step "Build Complete!"
+Write-Step "Build Complete"
