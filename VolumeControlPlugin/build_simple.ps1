@@ -11,7 +11,7 @@ param(
 $ErrorActionPreference = "Stop"  # Stop on first error
 $vsYears = @(2022, 2019, 2017)   # VS versions to check
 $buildDir = "build_vs"           # Build directory
-$cmakeGenerator = "Visual Studio 16 2019"  # Default generator
+$cmakeGenerator = "Visual Studio 17 2022"  # Default generator
 
 # Display header
 Write-Host ""
@@ -130,8 +130,8 @@ if ($vsVersion -eq "2022") {
     $cmakeGenerator = "Visual Studio 15 2017"
     $vsYear = "2017"
 } else {
-    $cmakeGenerator = "Visual Studio 16 2019" # Default fallback
-    $vsYear = "2019"
+    $cmakeGenerator = "Visual Studio 17 2022" # Default fallback
+    $vsYear = "2022"
 }
 
 # Find Visual C++ compiler paths
