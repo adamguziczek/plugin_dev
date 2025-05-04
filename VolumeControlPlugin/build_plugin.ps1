@@ -1,121 +1,193 @@
-# build_plugin.ps1 - Simplified JUCE Plugin Build Script for Windows
-# Usage: .\build_plugin.ps1 or .\build_plugin.ps1 Debug
+# Volume Control Plugin - Comprehensive Windows Build Script
+# Usage: .\build_plugin.ps1 [Debug|Release]
+# Run with: PowerShell -ExecutionPolicy Bypass -File build_plugin.ps1 [Debug|Release]
 
 param(
     [string]$BuildType = "Release"
 )
 
 # Configuration
-$ScriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
-$BuildDir = Join-Path $ScriptPath "build_vs"
-$JuceDir = Join-Path (Split-Path -Parent $ScriptPath) "JUCE"
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
+$BuildDir = Join-Path $ScriptDir "build_vs"
+$JuceDir = Join-Path (Split-Path -Parent $ScriptDir) "JUCE"
 
-# Check prerequisites
-Write-Host "`n→ Checking prerequisites..." -ForegroundColor Yellow
+# Helper functions
+function Write-ColorText {
+    param (
+        [string]$Text,
+        [string]$Color = "White"
+    )
+    Write-Host $Text -ForegroundColor $Color
+}
+
+function Write-Step {
+    param ([string]$Text)
+    Write-ColorText "`n→ $Text" "Yellow"
+}
+
+function Write-Success {
+    param ([string]$Text)
+    Write-ColorText "✓ $Text" "Green"
+}
+
+function Write-Error {
+    param ([string]$Text)
+    Write-ColorText "ERROR: $Text" "Red"
+}
+
+function Write-Warning {
+    param ([string]$Text)
+    Write-ColorText "WARNING: $Text" "Yellow"
+}
+
+# Check execution policy
+$policy = Get-ExecutionPolicy -Scope Process
+if ($policy -eq "Restricted" -or $policy -eq "AllSigned") {
+    Write-Warning "PowerShell execution policy is set to $policy"
+    Write-ColorText "If you receive a policy error, run this command first:" "Gray"
+    Write-ColorText "Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process" "Gray"
+}
+
+# Print header
+Write-ColorText "`n=============================================" "Cyan"
+Write-ColorText " Volume Control Plugin - Windows Build Script " "Cyan"
+Write-ColorText "=============================================" "Cyan"
+Write-ColorText "Building in $BuildType configuration" "Cyan"
+
+# Step 1: Check prerequisites
+Write-Step "Checking prerequisites..."
 
 # Check Visual Studio
-$VsPath = "C:\Program Files (x86)\Microsoft Visual Studio\2019"
-if (-not (Test-Path $VsPath)) {
-    Write-Host "ERROR: Visual Studio 2019 not found at $VsPath" -ForegroundColor Red
+$vsFound = $false
+$vsVersion = ""
+# Try Visual Studio 2022
+if (Test-Path "C:\Program Files\Microsoft Visual Studio\2022") {
+    $vsFound = $true
+    $vsVersion = "2022"
+    $vsGenerator = "Visual Studio 17 2022"
+    Write-Success "Visual Studio 2022 found"
+}
+# Try Visual Studio 2019 if 2022 wasn't found
+elseif (Test-Path "C:\Program Files (x86)\Microsoft Visual Studio\2019") {
+    $vsFound = $true
+    $vsVersion = "2019"
+    $vsGenerator = "Visual Studio 16 2019"
+    Write-Success "Visual Studio 2019 found"
+}
+else {
+    Write-Error "Visual Studio 2019 or 2022 not found!"
+    Write-ColorText "Please install Visual Studio with 'Desktop development with C++' workload."
+    Write-ColorText "Download from: https://visualstudio.microsoft.com/downloads/"
     exit 1
 }
-Write-Host "✓ Visual Studio 2019 found" -ForegroundColor Green
 
 # Check CMake
 try {
-    $CMakeVersion = (cmake --version) | Select-Object -First 1
-    Write-Host "✓ $CMakeVersion" -ForegroundColor Green
+    $cmakeVersion = (cmake --version) | Select-Object -First 1
+    Write-Success "$cmakeVersion"
 }
 catch {
-    Write-Host "ERROR: CMake not found" -ForegroundColor Red
+    Write-Error "CMake not found!"
+    Write-ColorText "Please install CMake 3.15 or higher."
+    Write-ColorText "Download from: https://cmake.org/download/"
     exit 1
 }
 
 # Check JUCE
 if (-not (Test-Path $JuceDir)) {
-    Write-Host "ERROR: JUCE not found at $JuceDir" -ForegroundColor Red
+    Write-Error "JUCE not found at $JuceDir"
+    Write-ColorText "Please make sure the JUCE framework is in the parent directory of this project."
+    Write-ColorText "Clone it with: git clone https://github.com/juce-framework/JUCE.git"
     exit 1
 }
-Write-Host "✓ JUCE found at $JuceDir" -ForegroundColor Green
-Write-Host "All prerequisites satisfied!" -ForegroundColor Green
+Write-Success "JUCE found at $JuceDir"
+Write-Success "All prerequisites satisfied!"
 
-# Create build directory
-Write-Host "`n→ Creating build directory..." -ForegroundColor Yellow
+# Step 2: Create build directory
+Write-Step "Creating build directory..."
 if (Test-Path $BuildDir) {
-    Write-Host "Cleaning previous build artifacts..." -ForegroundColor Yellow
+    Write-ColorText "Cleaning previous build artifacts..." "Gray"
     Remove-Item -Path "$BuildDir\*" -Recurse -Force -ErrorAction SilentlyContinue
 }
 else {
     New-Item -Path $BuildDir -ItemType Directory -Force | Out-Null
 }
-Write-Host "Build directory ready at $BuildDir" -ForegroundColor Green
+Write-Success "Build directory ready at $BuildDir"
 
-# Run CMake
-Write-Host "`n→ Running CMake configuration..." -ForegroundColor Yellow
+# Step 3: Run CMake
+Write-Step "Running CMake configuration..."
 Push-Location $BuildDir
-$CMakeArgs = @("-G", "Visual Studio 16 2019", "-A", "x64", "-DCMAKE_BUILD_TYPE=$BuildType", "-DJUCE_DIR=$JuceDir", "..")
-Write-Host "Executing: cmake $CMakeArgs" -ForegroundColor DarkGray
+$CMakeArgs = @("-G", $vsGenerator, "-A", "x64", "-DCMAKE_BUILD_TYPE=$BuildType", "-DJUCE_DIR=$JuceDir", "..")
+Write-ColorText "Executing: cmake $CMakeArgs" "Gray"
 try {
     & cmake $CMakeArgs
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "ERROR: CMake configuration failed with exit code $LASTEXITCODE" -ForegroundColor Red
+        Write-Error "CMake configuration failed with exit code $LASTEXITCODE"
         Pop-Location
         exit 1
     }
-    Write-Host "CMake configuration completed successfully!" -ForegroundColor Green
+    Write-Success "CMake configuration completed successfully!"
 }
 catch {
     $ErrorMsg = $_.Exception.Message
-    Write-Host "ERROR: CMake failed: $ErrorMsg" -ForegroundColor Red
+    Write-Error "CMake failed: $ErrorMsg"
     Pop-Location
     exit 1
 }
 
-# Build
-Write-Host "`n→ Building project ($BuildType)..." -ForegroundColor Yellow
+# Step 4: Build
+Write-Step "Building project ($BuildType)..."
 $BuildCommand = "cmake --build . --config $BuildType"
-Write-Host "Executing: $BuildCommand" -ForegroundColor DarkGray
+Write-ColorText "Executing: $BuildCommand" "Gray"
 try {
     & cmake --build . --config $BuildType
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "ERROR: Build failed with exit code $LASTEXITCODE" -ForegroundColor Red
+        Write-Error "Build failed with exit code $LASTEXITCODE"
         Pop-Location
         exit 1
     }
-    Write-Host "Build completed successfully!" -ForegroundColor Green
+    Write-Success "Build completed successfully!"
 }
 catch {
     $ErrorMsg = $_.Exception.Message
-    Write-Host "ERROR: Build failed: $ErrorMsg" -ForegroundColor Red
+    Write-Error "Build failed: $ErrorMsg"
     Pop-Location
     exit 1
 }
 Pop-Location
 
-# Show results
-Write-Host "`n→ Build Results:" -ForegroundColor Yellow
+# Step 5: Show results
+Write-Step "Build Results:"
 $PluginPath = Join-Path $BuildDir "VolumeControlPlugin_artefacts\$BuildType\VST3\VolumeControlPlugin.vst3"
 $StandalonePath = Join-Path $BuildDir "VolumeControlPlugin_artefacts\$BuildType\Standalone\VolumeControlPlugin.exe"
 
 if (Test-Path $PluginPath) {
-    Write-Host "VST3 Plugin: $PluginPath" -ForegroundColor Green
+    Write-Success "VST3 Plugin built successfully!"
+    Write-ColorText "Location: $PluginPath" "White"
 }
 else {
-    Write-Host "VST3 Plugin not found! Build may have failed." -ForegroundColor Red
+    Write-Error "VST3 Plugin not found at expected location. Build may have failed."
 }
 
 if (Test-Path $StandalonePath) {
-    Write-Host "Standalone App: $StandalonePath" -ForegroundColor Green
+    Write-Success "Standalone App built successfully!"
+    Write-ColorText "Location: $StandalonePath" "White"
 }
 else {
-    Write-Host "Standalone application not found! Build may have failed." -ForegroundColor Red
+    Write-Error "Standalone application not found at expected location. Build may have failed."
 }
 
-Write-Host "`nTo load the plugin in your DAW:" -ForegroundColor White
-Write-Host "1. Copy the .vst3 folder to your VST3 directory (C:\Program Files\Common Files\VST3)" -ForegroundColor White
-Write-Host "2. Rescan for plugins in your DAW" -ForegroundColor White
-Write-Host "3. Look for 'Volume Control Plugin' in the effects list" -ForegroundColor White
+# Step 6: Installation instructions
+Write-Step "Installation Instructions:"
+Write-ColorText "To load the plugin in your DAW:" "White"
+Write-ColorText "1. Copy the .vst3 folder to your VST3 directory:" "White"
+Write-ColorText "   C:\Program Files\Common Files\VST3" "Gray"
+Write-ColorText "2. Rescan for plugins in your DAW" "White"
+Write-ColorText "3. Look for 'Volume Control Plugin' in the effects list" "White"
+Write-ColorText ""
+Write-ColorText "To test the plugin without a DAW, run the standalone application:" "White"
+Write-ColorText "   $StandalonePath" "Gray"
 
-Write-Host "`n=============================================" -ForegroundColor Cyan
-Write-Host " Build Completed Successfully!" -ForegroundColor Cyan
-Write-Host "=============================================" -ForegroundColor Cyan
+Write-ColorText "`n=============================================" "Cyan"
+Write-ColorText " Build Completed Successfully!" "Cyan"
+Write-ColorText "=============================================" "Cyan"
