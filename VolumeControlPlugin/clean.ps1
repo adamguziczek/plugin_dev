@@ -7,8 +7,33 @@ Write-Host ""
 Write-Host "===== VOLUME CONTROL PLUGIN - CLEAN SCRIPT =====" -ForegroundColor Cyan
 Write-Host "This script will clean all build directories" -ForegroundColor White
 
-# Check if running from WSL path
+# Check if running from a system directory
 $currentPath = Get-Location
+$isSystemDir = $currentPath -like "C:\Windows\*" -or $currentPath -like "C:\Program Files\*" -or $currentPath -like "C:\Program Files (x86)\*"
+
+if ($isSystemDir) {
+    Write-Host "WARNING: You're running from a system directory: $currentPath" -ForegroundColor Yellow
+    Write-Host "This may cause permission issues or other unexpected behavior." -ForegroundColor Yellow
+    Write-Host "It's recommended to move your project to a non-system location like:" -ForegroundColor Yellow
+    Write-Host "  - C:\Dev\VolumeControlPlugin" -ForegroundColor White
+    Write-Host "  - C:\Projects\VolumeControlPlugin" -ForegroundColor White
+    Write-Host "  - C:\Users\YourUsername\Projects\VolumeControlPlugin" -ForegroundColor White
+    Write-Host ""
+    
+    # Ask for confirmation before proceeding
+    Write-Host "Do you want to continue anyway? (y/n)" -ForegroundColor White
+    $confirm = Read-Host
+    
+    if ($confirm -ne "y" -and $confirm -ne "Y") {
+        Write-Host "Clean operation aborted. Please move your project to a non-system directory." -ForegroundColor Red
+        exit 1
+    }
+    
+    Write-Host "Proceeding with clean in system directory..." -ForegroundColor Yellow
+    Write-Host ""
+}
+
+# Check if running from WSL path
 $isWslPath = $currentPath -like "\\wsl.localhost\*" -or $currentPath -like "\\wsl$\*"
 
 if ($isWslPath) {
@@ -48,12 +73,30 @@ foreach ($dir in $buildDirs) {
         if ($confirm -eq "y" -or $confirm -eq "Y") {
             try {
                 Write-Host "Removing $dir..." -ForegroundColor Yellow
-                Remove-Item -Path $fullPath -Recurse -Force
-                Write-Host "Directory $dir removed successfully" -ForegroundColor Green
-                $anyCleaned = $true
+                # Using temporary batch file to avoid path issues
+                $batchFile = Join-Path $PWD "temp_clean.bat"
+                
+                @"
+@echo off
+rd /s /q "$fullPath"
+"@ | Out-File -FilePath $batchFile -Encoding ASCII
+                
+                # Run the batch file
+                $process = Start-Process -FilePath "cmd.exe" -ArgumentList "/c `"$batchFile`"" -NoNewWindow -Wait -PassThru
+                
+                # Clean up the temporary batch file
+                if (Test-Path $batchFile) {
+                    Remove-Item $batchFile
+                }
+                
+                if ($process.ExitCode -eq 0) {
+                    Write-Host "Directory $dir removed successfully" -ForegroundColor Green
+                    $anyCleaned = $true
+                } else {
+                    Write-Host "Error removing directory with exit code $($process.ExitCode)" -ForegroundColor Red
+                }
             }
             catch {
-                # Simplify the error message to avoid string interpolation issues
                 Write-Host "Error removing directory. Please try again." -ForegroundColor Red
             }
         }
