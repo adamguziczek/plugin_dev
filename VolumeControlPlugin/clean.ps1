@@ -9,7 +9,7 @@ Write-Host "This script will clean all build directories" -ForegroundColor White
 
 # Define build directories to clean
 $buildDirs = @(
-    'build_vs'
+    "build_vs"
 )
 
 # Track if any directories were cleaned
@@ -22,9 +22,10 @@ foreach ($dir in $buildDirs) {
         Write-Host "Found build directory: $dir" -ForegroundColor Yellow
         
         # Ask for confirmation
-        $confirm = Read-Host "Are you sure you want to remove the $dir directory? (y/n)"
+        Write-Host "Are you sure you want to remove the $dir directory? (y/n)" -ForegroundColor White
+        $confirm = Read-Host
         
-        if ($confirm -eq 'y' -or $confirm -eq 'Y') {
+        if ($confirm -eq "y" -or $confirm -eq "Y") {
             try {
                 Write-Host "Removing $dir..." -ForegroundColor Yellow
                 Remove-Item -Path $fullPath -Recurse -Force
@@ -32,7 +33,6 @@ foreach ($dir in $buildDirs) {
                 $anyCleaned = $true
             }
             catch {
-                $errorMessage = $_.Exception.Message 
                 # Simplify the error message to avoid string interpolation issues
                 Write-Host "Error removing directory. Please try again." -ForegroundColor Red
             }
