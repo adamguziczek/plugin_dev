@@ -3,7 +3,8 @@
 # Run with: PowerShell -ExecutionPolicy Bypass -File clean.ps1
 
 # Print header
-Write-Host "`n===== VOLUME CONTROL PLUGIN - CLEAN SCRIPT =====" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "===== VOLUME CONTROL PLUGIN - CLEAN SCRIPT =====" -ForegroundColor Cyan
 Write-Host "This script will clean all build directories" -ForegroundColor White
 
 # Define build directories to clean
@@ -27,12 +28,13 @@ foreach ($dir in $buildDirs) {
             try {
                 Write-Host "Removing $dir..." -ForegroundColor Yellow
                 Remove-Item -Path $fullPath -Recurse -Force
-                Write-Host "✓ $dir directory removed successfully" -ForegroundColor Green
+                Write-Host "Directory $dir removed successfully" -ForegroundColor Green
                 $anyCleaned = $true
             }
             catch {
-                $errorMessage = $_.Exception.Message
-                Write-Host "Error removing directory: $errorMessage" -ForegroundColor Red
+                $errorMessage = $_.Exception.Message 
+                # Simplify the error message to avoid string interpolation issues
+                Write-Host "Error removing directory. Please try again." -ForegroundColor Red
             }
         }
         else {
@@ -45,10 +47,11 @@ foreach ($dir in $buildDirs) {
 }
 
 if ($anyCleaned) {
-    Write-Host "✓ Clean completed successfully" -ForegroundColor Green
+    Write-Host "Clean completed successfully" -ForegroundColor Green
 }
 else {
     Write-Host "No directories were cleaned" -ForegroundColor Yellow
 }
 
-Write-Host "`n===== Clean Script Complete =====" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "===== Clean Script Complete =====" -ForegroundColor Cyan
