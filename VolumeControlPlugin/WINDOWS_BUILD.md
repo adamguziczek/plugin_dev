@@ -79,26 +79,34 @@ Two PowerShell scripts are provided for building the plugin:
    .\build_plugin.ps1
    ```
 
-## Building from WSL (Windows Subsystem for Linux)
+## Important: WSL Compatibility
 
-The build scripts are designed to work from both native Windows PowerShell and when called from WSL. To build from WSL:
+### Limitations with WSL Paths
 
-1. **Navigate to the project directory in WSL**
+Our build scripts detect when they're running from a WSL path (like `\\wsl.localhost\Ubuntu\...`) and will display an error message. This is because **Windows Command Prompt (CMD) cannot use UNC paths as the current directory**, which prevents CMake from running properly.
+
+### Alternatives for WSL Users
+
+If you're developing in WSL, you have these options:
+
+1. **Clone the repository to a Windows path (recommended)**:
    ```bash
-   cd /path/to/VolumeControlPlugin
+   # From Windows PowerShell
+   git clone <your-repo-url> C:\Dev\VolumeControlPlugin
+   cd C:\Dev\VolumeControlPlugin
+   .\build_simple.ps1
    ```
 
-2. **Run the PowerShell script using the WSL path**
-   ```bash
-   powershell.exe -ExecutionPolicy Bypass -File ./build_simple.ps1
-   ```
+2. **Use native Linux build process**:
+   - See README_BUILD.md for Linux build instructions using the native build.sh script
 
-3. **Alternatively, use the full Windows path**
-   ```bash
-   powershell.exe -ExecutionPolicy Bypass -File \\wsl.localhost\Ubuntu\path\to\VolumeControlPlugin\build_simple.ps1
+3. **Copy project files to a Windows path and build from there**:
+   ```powershell
+   # From Windows PowerShell
+   Copy-Item -Path "\\wsl.localhost\Ubuntu\path\to\VolumeControlPlugin" -Destination "C:\Temp\VolumeControlPlugin" -Recurse
+   cd C:\Temp\VolumeControlPlugin
+   .\build_simple.ps1
    ```
-
-The build scripts automatically set up the Visual Studio environment to ensure proper compiler detection, even when running from WSL.
 
 ## Build Output Locations
 
@@ -180,13 +188,13 @@ Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
 - Ensure CMake is added to your system PATH
 - Restart PowerShell after installation
 
-### Compiler Not Found When Running from WSL
+### WSL Path Error
 
-**Issue**: "No CMAKE_C_COMPILER could be found" or "No CMAKE_CXX_COMPILER could be found" errors  
+**Issue**: "Cannot build directly from WSL path", "UNC paths are not supported"  
 **Solution**:
-- This is automatically handled by the updated build scripts
-- The scripts explicitly initialize the Visual Studio environment before running CMake
-- If you still encounter this issue, make sure Visual Studio is properly installed with C++ workload
+- You cannot run the Windows build scripts from a WSL path (\\wsl.localhost\...)
+- Clone the repository to a native Windows path as described in the "WSL Compatibility" section
+- Alternatively, use the Linux build instructions from within WSL
 
 ### JUCE Not Found
 
@@ -207,7 +215,6 @@ Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
 - Clean the build directories with `.\clean.ps1`
 - Try building with the Debug configuration: `.\build_plugin.ps1 Debug`
 - Check the console output for specific error messages
-- Make sure you're using the latest scripts that include WSL compatibility fixes
 
 ## Advanced: Manual Build without Scripts
 
