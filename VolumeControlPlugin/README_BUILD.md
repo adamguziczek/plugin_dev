@@ -9,14 +9,13 @@ The following scripts are provided to automate the build process:
 ### Windows Build Scripts (PowerShell)
 - `build_plugin.ps1` - Builds the Windows plugin using Visual Studio
 - `build_simple.ps1` - A simplified version of the build script for Windows
+- `windows_build_from_wsl.ps1` - Special script for building on Windows while developing in WSL
 
 ### Linux Build Scripts (Bash)
 - `build.sh` - Builds the Linux plugin (default configuration)
 - `build_release.sh` - Builds an optimized version of the Linux plugin for production use
 - `clean.sh` - Cleans the build directories
-
 ## Prerequisites
-
 Before building the plugin, ensure you have the following prerequisites installed:
 
 - **CMake** (version 3.15 or higher)
@@ -31,11 +30,8 @@ For building on Windows, you'll need:
 - **Visual Studio 2019 or later** with "Desktop development with C++" workload installed
 - **CMake** (version 3.15 or higher)
 - **PowerShell 5.1 or later**
-
 ### Linux Prerequisites
-
 When building on Linux, the following system dependencies are required:
-
 - **pkg-config** - For finding package configurations
 - **GTK3** development libraries (libgtk-3-dev) - For GUI support
 - **WebKit2GTK** development libraries (libwebkit2gtk-4.1-dev) - For web content
@@ -45,13 +41,46 @@ When building on Linux, the following system dependencies are required:
 - **OpenGL** development libraries (libgl1-mesa-dev) - For graphics support
 - **libcurl** development libraries (libcurl4-openssl-dev) - For network operations
 - **X11** development libraries (libx11-dev) - For window management
-
 ## Building on Windows with PowerShell
-
 ### Quick Start Guide
-
 The easiest way to build the plugin on Windows is using the provided PowerShell scripts:
 
+## Building from WSL for Windows
+
+If you're developing in WSL (Windows Subsystem for Linux) but need to build for Windows, a special approach is needed since Windows build tools cannot directly access WSL paths.
+
+### Quick Start Guide for WSL-to-Windows Building
+
+1. **Open PowerShell** on Windows
+2. **Navigate to your WSL project path**:
+   ```powershell
+   cd \\wsl.localhost\Ubuntu\path\to\VolumeControlPlugin
+   ```
+3. **Run the WSL-to-Windows build script**:
+   ```powershell
+   PowerShell -ExecutionPolicy Bypass -File windows_build_from_wsl.ps1
+   ```
+
+This script will:
+- Copy your project files from WSL to a Windows path (default: C:\Temp\VolumeControlPlugin)
+- Copy the JUCE directory if needed
+- Run the Windows build process
+- Show you where to find the built plugin
+
+### Using VSCode Tasks for WSL-to-Windows Builds
+
+If you're using VSCode in WSL, we've added convenient tasks to build from WSL:
+
+1. Open the Command Palette (Ctrl+Shift+P)
+2. Type "Tasks: Run Task" and select it
+3. Choose one of these options:
+   - **WSL to Windows Build (Full)** - Copies all files and builds
+   - **WSL to Windows Build (Fast)** - Skips copying for faster iterations
+
+### Detailed Documentation
+
+For complete details on this approach, see the dedicated guide:
+[WSL_TO_WINDOWS_BUILD.md](WSL_TO_WINDOWS_BUILD.md)
 1. **Open PowerShell** as Administrator
 2. **Navigate to the project directory**
 3. **Run the build script**:
@@ -59,6 +88,10 @@ The easiest way to build the plugin on Windows is using the provided PowerShell 
    .\build_simple.ps1
    ```
 
+6. **WSL path errors**:
+   - If you see "UNC paths are not supported" or "Cannot build directly from WSL path"
+   - Use the `windows_build_from_wsl.ps1` script as described in the WSL-to-Windows section
+   - Or clone the repository to a Windows path and build from there
 This will build the plugin using the default Release configuration. If you encounter a PowerShell execution policy error, run:
 ```powershell
 Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
