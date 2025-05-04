@@ -1,15 +1,18 @@
 # Building the Volume Control Plugin
 
-This document provides detailed instructions for building the Volume Control Plugin using the provided build scripts.
+This document provides detailed instructions for building the Volume Control Plugin.
 
 ## Build Scripts Overview
 
-The following build scripts are provided to automate the build process:
+The following scripts are provided to automate the build process:
 
-- `setup_scripts.sh` - Makes all build scripts executable and installs required dependencies
+### Windows Build Scripts (PowerShell)
+- `build_plugin.ps1` - Builds the Windows plugin using Visual Studio
+- `build_simple.ps1` - A simplified version of the build script for Windows
+
+### Linux Build Scripts (Bash)
 - `build.sh` - Builds the Linux plugin (default configuration)
 - `build_release.sh` - Builds an optimized version of the Linux plugin for production use
-- `build_windows.sh` - Builds a Windows VST3 plugin using cross-compilation (for FL Studio and other Windows DAWs)
 - `clean.sh` - Cleans the build directories
 
 ## Prerequisites
@@ -17,12 +20,21 @@ The following build scripts are provided to automate the build process:
 Before building the plugin, ensure you have the following prerequisites installed:
 
 - **CMake** (version 3.15 or higher)
-- **C++ compiler** with C++17 support (g++ or clang++)
+- **C++ compiler** with C++17 support 
 - **JUCE framework** in the parent directory of this project
 
-### Linux/WSL Dependencies
+### Windows Prerequisites
 
-When building on Linux or WSL (Windows Subsystem for Linux), the following system dependencies are required:
+For building on Windows, you'll need:
+
+- **Windows 10/11**
+- **Visual Studio 2019 or later** with "Desktop development with C++" workload installed
+- **CMake** (version 3.15 or higher)
+- **PowerShell 5.1 or later**
+
+### Linux Prerequisites
+
+When building on Linux, the following system dependencies are required:
 
 - **pkg-config** - For finding package configurations
 - **GTK3** development libraries (libgtk-3-dev) - For GUI support
@@ -34,295 +46,212 @@ When building on Linux or WSL (Windows Subsystem for Linux), the following syste
 - **libcurl** development libraries (libcurl4-openssl-dev) - For network operations
 - **X11** development libraries (libx11-dev) - For window management
 
-The `setup_scripts.sh` script can automatically install these dependencies on Debian/Ubuntu-based systems, including WSL. For other Linux distributions, you'll need to install equivalent packages manually.
+## Building on Windows with PowerShell
 
-### Windows Cross-Compilation Dependencies (Optional)
+### Quick Start Guide
 
-To build Windows VST3 plugins from Linux/WSL (useful for FL Studio compatibility), you'll need:
+The easiest way to build the plugin on Windows is using the provided PowerShell scripts:
 
-- **MinGW-w64** - Cross-compiler toolchain for building Windows binaries
-- **binutils-mingw-w64** - Binutils for MinGW-w64
-- **g++-mingw-w64** - G++ for MinGW-w64
+1. **Open PowerShell** as Administrator
+2. **Navigate to the project directory**
+3. **Run the build script**:
+   ```powershell
+   .\build_simple.ps1
+   ```
 
-The `setup_scripts.sh` script can install these dependencies when you select the Windows cross-compilation option.
-
-## Step-by-Step Build Instructions
-
-### 1. Initial Setup
-
-After cloning the repository, make the build scripts executable and install dependencies:
-
-```bash
-# Navigate to the VolumeControlPlugin directory
-cd VolumeControlPlugin
-
-# Make the setup script executable
-chmod +x setup_scripts.sh
-
-# Run the setup script to make all scripts executable and install dependencies
-./setup_scripts.sh
+This will build the plugin using the default Release configuration. If you encounter a PowerShell execution policy error, run:
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
+.\build_simple.ps1
 ```
 
-The setup script will:
-- Make all build scripts executable
-- Detect if you're running in WSL
-- Offer to install required dependencies (recommended for first-time setup)
-- Provide guidance for WSL-specific configurations
-- Optionally set up Windows cross-compilation tools
+### Detailed Build Instructions for Windows
 
-### 2. Building the Plugin
+1. **Ensure prerequisites are installed**:
+   - Visual Studio 2019 or later with "Desktop development with C++" workload
+   - CMake 3.15 or higher (check with `cmake --version`)
 
-#### Linux Build (Default)
+2. **Verify the JUCE framework**:
+   - Ensure the JUCE directory is in the parent directory of VolumeControlPlugin
+   - If not, clone JUCE: `git clone https://github.com/juce-framework/JUCE.git`
 
-To build the Linux version of the plugin:
+3. **Open PowerShell** and navigate to the VolumeControlPlugin directory:
+   ```powershell
+   cd path\to\VolumeControlPlugin
+   ```
+
+4. **Run the build script with options**:
+   ```powershell
+   # For release build (default)
+   .\build_plugin.ps1
+   
+   # For debug build
+   .\build_plugin.ps1 Debug
+   ```
+   
+   The `build_plugin.ps1` script will:
+   - Check for prerequisites (Visual Studio and CMake)
+   - Create a build directory named "build_vs"
+   - Configure the project using CMake with Visual Studio generator
+   - Build the plugin in the specified configuration (Release by default)
+   - Display the location of the built plugin files
+
+5. **Alternative: Use the simplified build script**:
+   ```powershell
+   .\build_simple.ps1
+   ```
+   This script performs the same steps with fewer prompts and less verbose output.
+
+6. **Locate the built plugin**:
+   After a successful build, the VST3 plugin will be located at:
+   ```
+   build_vs\VolumeControlPlugin_artefacts\Release\VST3\VolumeControlPlugin.vst3
+   ```
+   The standalone application will be at:
+   ```
+   build_vs\VolumeControlPlugin_artefacts\Release\Standalone\VolumeControlPlugin.exe
+   ```
+
+### Manual Build on Windows
+
+If you prefer to manually run the build commands:
+
+1. **Create a build directory**:
+   ```powershell
+   mkdir build_vs
+   cd build_vs
+   ```
+
+2. **Configure with CMake**:
+   ```powershell
+   cmake -G "Visual Studio 16 2019" -A x64 ..
+   ```
+   *Note: Use "Visual Studio 17 2022" for Visual Studio 2022*
+
+3. **Build the project**:
+   ```powershell
+   cmake --build . --config Release
+   ```
+
+4. **Find the built plugin**:
+   ```
+   build_vs\VolumeControlPlugin_artefacts\Release\VST3\VolumeControlPlugin.vst3
+   ```
+
+## Building on Linux
+
+### Prerequisites Setup
+
+For Debian/Ubuntu-based systems:
 
 ```bash
-./build.sh
+sudo apt-get update
+sudo apt-get install build-essential cmake pkg-config libgtk-3-dev libwebkit2gtk-4.1-dev libasound2-dev libfreetype6-dev libfontconfig1-dev libgl1-mesa-dev libcurl4-openssl-dev libx11-dev
 ```
 
-The build script will:
-- Check prerequisites
-- Create a build directory
-- Run CMake to configure the project
-- Build the plugin
-- Display the location of the built plugin files
+### Building with Scripts
 
-Note: The Linux build creates plugins that can only be used in Linux DAWs, not Windows applications like FL Studio.
+1. **Make the build scripts executable**:
+   ```bash
+   chmod +x build.sh clean.sh
+   ```
 
-#### Windows Build (Cross-compilation)
+2. **Build the plugin**:
+   ```bash
+   ./build.sh
+   ```
+   
+   For an optimized release build:
+   ```bash
+   ./build_release.sh
+   ```
 
-To build a Windows VST3 plugin that can be used in FL Studio and other Windows DAWs:
+3. **Find the built plugin**:
+   The plugin will be available at:
+   ```
+   build/VolumeControlPlugin_artefacts/VST3/VolumeControlPlugin.vst3
+   ```
+
+## Using the VST3 Plugin
+
+After building the plugin, you'll need to install it in the appropriate location:
+
+### Windows
+
+Copy the VST3 plugin to the system VST3 directory:
+
+```powershell
+# Create the directory if it doesn't exist
+$vst3Dir = "C:\Program Files\Common Files\VST3"
+if (-not (Test-Path $vst3Dir)) {
+    New-Item -Path $vst3Dir -ItemType Directory -Force
+}
+
+# Copy the plugin
+Copy-Item -Path "build_vs\VolumeControlPlugin_artefacts\Release\VST3\VolumeControlPlugin.vst3" -Destination $vst3Dir -Recurse -Force
+```
+
+### Linux
+
+Copy the VST3 plugin to your user's VST3 directory:
 
 ```bash
-./build_windows.sh
+mkdir -p ~/.vst3
+cp -r build/VolumeControlPlugin_artefacts/VST3/VolumeControlPlugin.vst3 ~/.vst3/
 ```
-
-This script will:
-- Check for MinGW-w64 prerequisites
-- Create a separate build_windows directory
-- Configure CMake with the MinGW-w64 toolchain
-- Build a Windows-compatible VST3 plugin
-- Display the location of the built Windows VST3 plugin
-- (Optional) Copy the plugin to your Windows VST3 directory if running in WSL
-
-The Windows build uses an enhanced toolchain file (`mingw-w64-toolchain.cmake`) specifically designed to handle cross-compilation challenges when building JUCE plugins for Windows from Linux/WSL. Our toolchain:
-
-- Suppresses specific warnings that would otherwise cause errors (`-Wno-shift-count-overflow`, `-Wno-narrowing`)
-- Enables relaxed type checking with `-fpermissive` to handle Windows-specific code
-- Properly defines all required Windows platform macros for JUCE
-- Statically links C++ libraries to improve compatibility
-- Disables problematic features that don't cross-compile well
-
-After building the Windows VST3, you can copy it to your Windows VST3 directory (typically `C:\Program Files\Common Files\VST3`) and use it in FL Studio or other Windows DAWs.
-
-#### Release Build (Optimized)
-
-To build an optimized version of the Linux plugin for production use:
-
-```bash
-./build_release.sh
-```
-
-The release build script will:
-- Check prerequisites
-- Create a separate build_release directory
-- Run CMake with Release configuration (optimized)
-- Build the plugin with optimizations enabled
-- Display the location of the built plugin files
-
-The release build produces smaller, faster plugin binaries that are suitable for distribution and production use.
-
-Note: The Windows build script (`build_windows.sh`) always uses the Release configuration for optimized builds.
-
-### 3. Cleaning the Build
-
-If you need to clean the build directories (e.g., for a fresh build or to troubleshoot build issues), run:
-
-```bash
-./clean.sh
-```
-
-The script will ask for confirmation before removing the build directories.
-
-## Build Output
-
-### Linux Build
-
-After a successful Linux build, the plugin files will be available in the `build` directory under their respective format folders:
-
-- **VST3**: `build/VolumeControlPlugin_artefacts/VST3/`
-- **AU** (macOS only): `build/VolumeControlPlugin_artefacts/AU/`
-- **Standalone**: `build/VolumeControlPlugin_artefacts/Standalone/`
-
-### Linux Release Build
-
-After a successful Linux release build, the optimized plugin files will be available in the `build_release` directory:
-
-- **VST3**: `build_release/VolumeControlPlugin_artefacts/VST3/`
-- **AU** (macOS only): `build_release/VolumeControlPlugin_artefacts/AU/`
-- **Standalone**: `build_release/VolumeControlPlugin_artefacts/Standalone/`
-
-### Windows Build
-
-After a successful Windows cross-compilation build, the Windows VST3 plugin will be available in:
-
-- **Windows VST3**: `build_windows/VolumeControlPlugin_artefacts/VST3/`
-
-This Windows VST3 plugin can be copied to a Windows system and used in any VST3-compatible host, including FL Studio.
-
-## Windows VST3 in FL Studio
-
-To use your cross-compiled Windows VST3 plugin in FL Studio:
-
-1. Build the plugin using `./build_windows.sh`
-2. When prompted, choose to copy the VST3 plugin to the Windows VST3 directory (if running in WSL)
-3. Alternatively, manually copy the entire `.vst3` folder to `C:\Program Files\Common Files\VST3`
-4. Start FL Studio
-5. In FL Studio, go to Options > Manage Plugins
-6. Click "Find plugins" and wait for the scan to complete
-7. Search for "Volume Control Plugin" in the plugin browser
-8. The plugin should now be available in FL Studio's plugin list
 
 ## Troubleshooting
 
-### Common Issues
+### Common Issues on Windows
 
-1. **CMake not found or version too old**
-   - Install CMake 3.15 or higher: [CMake Download Page](https://cmake.org/download/)
-
-2. **C++ compiler not found**
-   - Install g++ or clang++
-   - On Ubuntu/Debian: `sudo apt-get install g++`
-   - On macOS: Install Xcode Command Line Tools: `xcode-select --install`
-
-3. **JUCE framework not found**
-   - Ensure the JUCE directory is in the parent directory of the VolumeControlPlugin
-   - If needed, clone JUCE: `git clone https://github.com/juce-framework/JUCE.git`
-
-4. **Missing dependencies on Linux/WSL**
-   - Run `./setup_scripts.sh` and answer yes to install dependencies
-   - For manual installation on Debian/Ubuntu: `sudo apt-get install build-essential cmake pkg-config libgtk-3-dev libwebkit2gtk-4.1-dev libasound2-dev libfreetype6-dev libfontconfig1-dev libgl1-mesa-dev libcurl4-openssl-dev libx11-dev`
-
-5. **Build errors**
-   - Run `./clean.sh` to clean the build directory
-   - Try building again with `./build.sh`
-   - Check the error messages for specific issues
-   
-6. **Windows cross-compilation errors**
-   - Ensure MinGW-w64 is properly installed: `sudo apt-get install mingw-w64 binutils-mingw-w64 g++-mingw-w64`
-   - Verify MinGW compiler is in the PATH: `which x86_64-w64-mingw32-gcc`
-   - Run `./clean.sh` to clean the build directories, then try again with `./build_windows.sh`
-
-### Common Cross-Compilation Errors
-
-When cross-compiling from Linux/WSL to Windows, you might encounter these specific errors that our toolchain is designed to handle:
-
-1. **Harfbuzz shift-count overflow errors**
+1. **PowerShell execution policy**:
+   ```powershell
+   Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
    ```
-   warning: left shift count >= width of type [-Wshift-count-overflow]
-   ```
-   Our toolchain suppresses these warnings using `-Wno-shift-count-overflow` since they occur in Harfbuzz (a font rendering component) but don't affect functionality.
 
-2. **Type narrowing errors**
-   ```
-   error: narrowing conversion of '18446744069414584320' from 'long long unsigned int' to 'uint64_t' [-Wnarrowing]
-   ```
-   Our toolchain suppresses these with `-Wno-narrowing` since they're often false positives in cross-compilation scenarios.
+2. **Visual Studio not found**:
+   - Ensure Visual Studio is installed with C++ development tools
+   - For VS 2022, modify the CMake generator in the script to "Visual Studio 17 2022"
 
-3. **Windows-specific API errors**
-   ```
-   error: '_create_locale' was not declared in this scope; did you mean 'freelocale'?
-   ```
-   Our toolchain properly defines Windows platform macros to ensure these APIs are correctly detected.
+3. **CMake not found**:
+   - Install CMake from https://cmake.org/download/
+   - Add CMake to your PATH
 
-4. **Pointer-to-integer cast errors**
-   ```
-   error: cast from 'const OT::Script*' to 'uintptr_t' {aka 'long unsigned int'} loses precision [-fpermissive]
-   ```
-   We use the `-fpermissive` flag to allow these casts that are typically valid in Windows but might trigger warnings in GCC.
+4. **JUCE not found**:
+   - Ensure the JUCE directory is in the parent directory of VolumeControlPlugin
+   - Clone JUCE: `git clone https://github.com/juce-framework/JUCE.git`
 
-5. **Library linking errors**
-   ```
-   undefined reference to 'curl_easy_init'
-   ```
-   Our toolchain includes explicit linking to common Windows libraries to prevent these undefined references.
+5. **Build errors**:
+   - Clean the build directories: `.\clean.ps1` (or `./clean.sh` on Linux)
+   - Try building with the Debug configuration: `.\build_plugin.ps1 Debug`
 
-### Advanced Troubleshooting
+### Common Issues on Linux
 
-For more detailed debugging:
+1. **Missing dependencies**:
+   - Run: `sudo apt-get install build-essential cmake pkg-config libgtk-3-dev libwebkit2gtk-4.1-dev libasound2-dev libfreetype6-dev libfontconfig1-dev libgl1-mesa-dev libcurl4-openssl-dev libx11-dev`
 
-1. Navigate to the build directory: `cd build` (or `cd build_windows` for Windows builds)
-2. Run CMake with verbose output: `cmake -DCMAKE_VERBOSE_MAKEFILE=ON ..`
-3. Build with verbose output: `cmake --build . --verbose`
+2. **Permission denied on scripts**:
+   - Make scripts executable: `chmod +x *.sh`
 
-### WSL-Specific Issues
+3. **JUCE not found**:
+   - Clone JUCE in the parent directory: `git clone https://github.com/juce-framework/JUCE.git`
 
-When building in WSL (Windows Subsystem for Linux), you might encounter issues with library paths. The CMakeLists.txt file includes explicit include and link directories for GTK, WebKit2GTK, and libcurl to address these issues. If you still encounter problems:
+## Advanced Customization
 
-1. Verify that all dependencies are installed: `./setup_scripts.sh`
-2. Check if the include paths in CMakeLists.txt match your system
-3. For GTK-related errors, try: `pkg-config --cflags gtk+-3.0` to see the correct include paths
-4. For WebKit2GTK errors, try: `pkg-config --cflags webkit2gtk-4.1` to see the correct include paths
-5. For libcurl errors, try: `pkg-config --cflags libcurl` to see the correct include paths
+### Custom CMake Options
 
-### Windows VST3 Compatibility Issues
+You can pass custom CMake options by modifying the build scripts or running CMake manually.
 
-If your Windows VST3 plugin built with cross-compilation doesn't work in FL Studio:
+For example, to set a custom company name:
 
-1. Make sure you're using the plugin built with `./build_windows.sh`, not the Linux version
-2. Check that you've copied the entire `.vst3` folder (not just the .dll file inside)
-3. Place the VST3 in the standard Windows VST3 directory: `C:\Program Files\Common Files\VST3`
-4. Restart FL Studio and rescan for plugins
-5. Check FL Studio's plugin manager to see if there are any loading errors
-6. Verify the plugin was built for the correct architecture (x86_64)
+```powershell
+# Windows
+cmake -G "Visual Studio 16 2019" -A x64 -DCOMPANY_NAME="YourCompany" ..
 
-## Advanced Usage
-
-### Custom Build Options
-
-You can pass custom CMake options by modifying the build script or running CMake manually:
-
-```bash
-# For Linux builds
-cd build
-cmake -DCMAKE_BUILD_TYPE=Release ..  # For release build
-# or
-cmake -DCMAKE_BUILD_TYPE=Debug ..    # For debug build
-cmake --build .
-
-# For Windows cross-compilation
-cd build_windows
-cmake -DCMAKE_TOOLCHAIN_FILE=../mingw-w64-toolchain.cmake -DCMAKE_BUILD_TYPE=Release ..
-cmake --build .
+# Linux
+cmake -DCOMPANY_NAME="YourCompany" ..
 ```
 
 ### Building for Specific Formats
 
-By default, the plugin is built for all supported formats (VST3, AU, Standalone). If you want to build for specific formats only, you can modify the `FORMATS` line in `CMakeLists.txt`.
-
-### Cross-Compilation Notes
-
-The cross-compilation process uses MinGW-w64 to build Windows binaries from Linux. This has some limitations:
-
-1. Only VST3 format is supported for Windows cross-compilation
-2. Some JUCE features might not work the same as when compiled natively on Windows
-3. Static linking is used to minimize external dependencies
-4. WebKit and CURL functionality is disabled in Windows builds to avoid compatibility issues
-5. Certain compiler warnings are suppressed to allow successful builds
-
-The cross-compilation toolchain (`mingw-w64-toolchain.cmake`) is carefully configured to handle JUCE-specific requirements:
-
-- It adds all necessary Windows platform definitions
-- It configures the compiler to handle JUCE and Harfbuzz code properly
-- It ensures proper static linking to minimize runtime dependencies
-- It disables features that don't cross-compile well
-
-For production Windows plugins, you may want to consider building natively on Windows with Visual Studio, but the cross-compiled VST3 should work well for testing and development with FL Studio and other DAWs.
-
-## Further Resources
-
-- [JUCE Documentation](https://juce.com/learn/)
-- [CMake Documentation](https://cmake.org/documentation/)
-- [Linux Dependencies for JUCE](https://github.com/juce-framework/JUCE/blob/master/docs/Linux%20Dependencies.md)
-- [MinGW-w64 Cross Compiler](https://www.mingw-w64.org/)
-- [FL Studio VST Plugin Support](https://www.image-line.com/fl-studio-learning/fl-studio-online-manual/html/plugins/plugin_management.htm)
+By default, the plugin is built as VST3 and Standalone. To modify this, edit the `FORMATS` line in `CMakeLists.txt`.
