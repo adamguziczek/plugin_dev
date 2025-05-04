@@ -79,6 +79,27 @@ Two PowerShell scripts are provided for building the plugin:
    .\build_plugin.ps1
    ```
 
+## Building from WSL (Windows Subsystem for Linux)
+
+The build scripts are designed to work from both native Windows PowerShell and when called from WSL. To build from WSL:
+
+1. **Navigate to the project directory in WSL**
+   ```bash
+   cd /path/to/VolumeControlPlugin
+   ```
+
+2. **Run the PowerShell script using the WSL path**
+   ```bash
+   powershell.exe -ExecutionPolicy Bypass -File ./build_simple.ps1
+   ```
+
+3. **Alternatively, use the full Windows path**
+   ```bash
+   powershell.exe -ExecutionPolicy Bypass -File \\wsl.localhost\Ubuntu\path\to\VolumeControlPlugin\build_simple.ps1
+   ```
+
+The build scripts automatically set up the Visual Studio environment to ensure proper compiler detection, even when running from WSL.
+
 ## Build Output Locations
 
 After a successful build, you'll find the plugin files in the following locations:
@@ -159,6 +180,14 @@ Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
 - Ensure CMake is added to your system PATH
 - Restart PowerShell after installation
 
+### Compiler Not Found When Running from WSL
+
+**Issue**: "No CMAKE_C_COMPILER could be found" or "No CMAKE_CXX_COMPILER could be found" errors  
+**Solution**:
+- This is automatically handled by the updated build scripts
+- The scripts explicitly initialize the Visual Studio environment before running CMake
+- If you still encounter this issue, make sure Visual Studio is properly installed with C++ workload
+
 ### JUCE Not Found
 
 **Issue**: "JUCE not found" error  
@@ -177,33 +206,38 @@ Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
 **Solution**:
 - Clean the build directories with `.\clean.ps1`
 - Try building with the Debug configuration: `.\build_plugin.ps1 Debug`
-- Check Visual Studio logs for more detailed error information
+- Check the console output for specific error messages
+- Make sure you're using the latest scripts that include WSL compatibility fixes
 
 ## Advanced: Manual Build without Scripts
 
-If you prefer to build manually:
+If you prefer to build manually, you need to set up the Visual Studio environment first:
 
-1. **Create a build directory**:
-   ```powershell
+1. **Open a Command Prompt or PowerShell window**
+
+2. **Set up the Visual Studio environment**:
+   ```cmd
+   "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" x64
+   ```
+   (Adjust the path according to your Visual Studio installation location and version)
+
+3. **Create a build directory**:
+   ```cmd
    mkdir build_manual
    cd build_manual
    ```
 
-2. **Configure with CMake**:
-   ```powershell
-   # For Visual Studio 2019
+4. **Configure with CMake**:
+   ```cmd
    cmake -G "Visual Studio 16 2019" -A x64 ..
-   
-   # For Visual Studio 2022
-   cmake -G "Visual Studio 17 2022" -A x64 ..
    ```
 
-3. **Build the project**:
-   ```powershell
+5. **Build the project**:
+   ```cmd
    cmake --build . --config Release
    ```
 
-4. **Find the built plugin**:
+6. **Find the built plugin**:
    ```
    build_manual\VolumeControlPlugin_artefacts\Release\VST3\VolumeControlPlugin.vst3
    ```
