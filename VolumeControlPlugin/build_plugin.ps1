@@ -117,10 +117,10 @@ Write-Success "Build directory ready at $BuildDir"
 # Step 3: Run CMake
 Write-Step "Running CMake configuration..."
 Push-Location $BuildDir
-$CMakeArgs = @("-G", $vsGenerator, "-A", "x64", "-DCMAKE_BUILD_TYPE=$BuildType", "-DJUCE_DIR=$JuceDir", "..")
-Write-ColorText "Executing: cmake $CMakeArgs" "Gray"
+$cmakeArgs = @("-G", $vsGenerator, "-A", "x64", "-DCMAKE_BUILD_TYPE=$BuildType", "-DJUCE_DIR=$JuceDir", "..")
+Write-ColorText "Executing: cmake $cmakeArgs" "Gray"
 try {
-    & cmake $CMakeArgs
+    & cmake $cmakeArgs
     if ($LASTEXITCODE -ne 0) {
         Write-Error "CMake configuration failed with exit code $LASTEXITCODE"
         Pop-Location
@@ -136,11 +136,12 @@ catch {
 }
 
 # Step 4: Build
-Write-Step "Building project ($BuildType)..."
-$BuildCommand = "cmake --build . --config $BuildType"
-Write-ColorText "Executing: $BuildCommand" "Gray"
+$buildStepMessage = "Building project ($BuildType)"
+Write-Step $buildStepMessage
+$buildArgs = @("--build", ".", "--config", "$BuildType")
+Write-ColorText "Executing: cmake $buildArgs" "Gray"
 try {
-    & cmake --build . --config $BuildType
+    & cmake $buildArgs
     if ($LASTEXITCODE -ne 0) {
         Write-Error "Build failed with exit code $LASTEXITCODE"
         Pop-Location
