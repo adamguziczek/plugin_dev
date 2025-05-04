@@ -128,13 +128,25 @@ else {
 # Step 3: Configure with CMake
 Write-Step "Configuring with CMake"
 Push-Location $BuildDir
+
+# Create the CMake arguments array
+$cmakeConfigArgs = @(
+    "-G",
+    """$vsGenerator""",
+    "-A",
+    "x64",
+    "-DCMAKE_BUILD_TYPE=$BuildType",
+    ".."
+)
+
+Write-ColorText "Running: cmake with Visual Studio generator" "Gray"
+
 try {
-    $cmakeArgs = "-G", "`"$vsGenerator`"", "-A", "x64", "-DCMAKE_BUILD_TYPE=$BuildType", ".."
-    Write-ColorText "Running: cmake $cmakeArgs" "Gray"
+    # Run CMake configure
+    & cmake @cmakeConfigArgs
     
-    $cmakeProcess = Start-Process -FilePath "cmake" -ArgumentList $cmakeArgs -NoNewWindow -PassThru -Wait
-    if ($cmakeProcess.ExitCode -ne 0) {
-        Write-Error "CMake configuration failed with exit code $($cmakeProcess.ExitCode)"
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "CMake configuration failed with exit code $LASTEXITCODE"
         Pop-Location
         exit 1
     }
@@ -147,15 +159,25 @@ catch {
 }
 
 # Step 4: Build the project
-$buildStepMessage = "Building Project ($BuildType)"
-Write-Step $buildStepMessage
+Write-Step "Building Project"
+Write-ColorText "Building in $BuildType configuration" "Yellow"
+
 try {
-    $buildArgs = "--build", ".", "--config", "$BuildType"
-    Write-ColorText "Running: cmake $buildArgs" "Gray"
+    # Create the build arguments array
+    $cmakeBuildArgs = @(
+        "--build",
+        ".",
+        "--config",
+        "$BuildType"
+    )
     
-    $buildProcess = Start-Process -FilePath "cmake" -ArgumentList $buildArgs -NoNewWindow -PassThru -Wait
-    if ($buildProcess.ExitCode -ne 0) {
-        Write-Error "Build failed with exit code $($buildProcess.ExitCode)"
+    Write-ColorText "Running: cmake --build . --config $BuildType" "Gray"
+    
+    # Run CMake build
+    & cmake @cmakeBuildArgs
+    
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Build failed with exit code $LASTEXITCODE"
         Pop-Location
         exit 1
     }
