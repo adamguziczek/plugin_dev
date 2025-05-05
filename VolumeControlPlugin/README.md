@@ -1,15 +1,3 @@
-# Volume Control Plugin
-
-A simple volume control audio plugin built with the JUCE framework. This plugin provides a basic volume control with a slider UI.
-
-## Features
-
-- Simple volume control with a vertical slider
-- Supports values from 0.0 (silence) to 1.0 (full volume)
-- Default value of 0.7 (70%)
-- Double-click the slider to reset to default value
-- State saving/loading (plugin settings are preserved between sessions)
-
 ## Supported Formats
 
 - VST3
@@ -63,11 +51,6 @@ chmod +x setup_scripts.sh
    ./build.sh
    ```
 
-For a release (optimized) build:
-   ```
-   ./build_release.sh
-   ```
-
 The built plugins will be available in the `build` directory under their respective format folders.
 
 ### Build Steps for Windows
@@ -98,8 +81,6 @@ C:\Temp\VolumeControlPlugin\build_vs\VolumeControlPlugin_artefacts\Release\VST3\
 1. After building, find the VST3 plugin at the location shown in the build output
 2. Copy it to your VST3 directory or configure your DAW to find it in the build location
 3. Load the plugin in your favorite DAW (Digital Audio Workstation)
-4. Adjust the volume using the vertical slider
-5. The volume setting will be saved with your project
 
 ## Development
 
