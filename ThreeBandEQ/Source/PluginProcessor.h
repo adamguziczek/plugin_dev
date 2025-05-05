@@ -15,18 +15,13 @@
 //==============================================================================
 /**
  * Main audio processor class for the 3-band equalizer plugin
- * 
- * This class handles:
- * - Audio processing for 3 frequency bands (low, mid, high)
- * - Parameter management for each band's gain and frequency
- * - Preset loading/saving
  */
-class ThreeBandEQAudioProcessor : public juce::AudioProcessor
+class ThreeBandEQAudioProcessor  : public juce::AudioProcessor
 {
 public:
     //==============================================================================
     ThreeBandEQAudioProcessor();
-    ~ThreeBandEQAudioProcessor() noexcept;
+    ~ThreeBandEQAudioProcessor() override;
 
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
@@ -67,29 +62,15 @@ public:
 
 private:
     //==============================================================================
-    // Enumeration for processor chain indices
-    enum ChainPositions {
-        LowBand,
-        MidBand,
-        HighBand
-    };
-
-    // Define the filter type we'll use
-    using FilterBand = juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<float>, 
-                                                     juce::dsp::IIR::Coefficients<float>>;
-    
-    // DSP processing objects
-    juce::dsp::ProcessorChain<FilterBand, FilterBand, FilterBand> processorChain;
-    
-    // Audio processing variables
-    juce::AudioBuffer<float> dummyBuffer; // Used to initialize these below
-    juce::dsp::AudioBlock<float> audioBlock { dummyBuffer };
-    juce::dsp::ProcessContextReplacing<float> processContext { audioBlock };
+    // Individual filters for each band
+    juce::dsp::IIR::Filter<float> lowBandFilter;
+    juce::dsp::IIR::Filter<float> midBandFilter;
+    juce::dsp::IIR::Filter<float> highBandFilter;
     
     // Audio parameter creation helper
     juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
     
-    // Filter update methods
+    // Filter update method
     void updateFilters();
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ThreeBandEQAudioProcessor)
