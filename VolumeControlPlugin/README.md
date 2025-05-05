@@ -92,10 +92,3 @@ This plugin demonstrates basic audio plugin development with JUCE, including:
 - State saving/loading
 
 Feel free to use this as a starting point for your own audio plugin projects.
-
-## Detailed Documentation
-
-For more detailed build instructions, troubleshooting, and advanced configuration:
-
-- [README_BUILD.md](./README_BUILD.md) - Comprehensive build instructions for both Windows and Linux
-- [WSL_TO_WINDOWS_BUILD.md](./WSL_TO_WINDOWS_BUILD.md) - Detailed guide for building from WSL to Windows
