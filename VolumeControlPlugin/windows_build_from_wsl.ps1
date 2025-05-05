@@ -356,13 +356,26 @@ if (![string]::IsNullOrEmpty($windowsSdkPath)) {
     Write-Host "Please install Windows 10 SDK through Visual Studio Installer" -ForegroundColor Yellow
 }
 
-# Create build directory
+# Create build directory and clean CMake cache
 $buildDir = "build_vs"
 if (!(Test-Path $buildDir)) {
     New-Item -ItemType Directory -Path $buildDir | Out-Null
     Write-Host "Created build directory: $buildDir" -ForegroundColor Green
 } else {
     Write-Host "Using existing build directory: $buildDir" -ForegroundColor Yellow
+    
+    # Clean any existing CMake cache to prevent generator conflicts
+    $cmakeCachePath = Join-Path $buildDir "CMakeCache.txt"
+    if (Test-Path $cmakeCachePath) {
+        Write-Host "Removing existing CMake cache to ensure clean configuration" -ForegroundColor Yellow
+        Remove-Item $cmakeCachePath -Force
+    }
+    
+    $cmakeFilesDir = Join-Path $buildDir "CMakeFiles"
+    if (Test-Path $cmakeFilesDir) {
+        Write-Host "Removing CMakeFiles directory to ensure clean configuration" -ForegroundColor Yellow
+        Remove-Item $cmakeFilesDir -Recurse -Force
+    }
 }
 
 # Create direct batch file for Visual Studio build
@@ -393,6 +406,14 @@ cd $buildDir
 if %ERRORLEVEL% NEQ 0 (
     echo Failed to change to build directory
     exit /b 1
+)
+
+echo Cleaning any existing CMake cache...
+if exist CMakeCache.txt (
+    del /f /q CMakeCache.txt
+)
+if exist CMakeFiles (
+    rd /s /q CMakeFiles
 )
 
 echo Running CMake configuration...
