@@ -26,7 +26,7 @@ class ThreeBandEQAudioProcessor : public juce::AudioProcessor
 public:
     //==============================================================================
     ThreeBandEQAudioProcessor();
-    ~ThreeBandEQAudioProcessor() override;
+    ~ThreeBandEQAudioProcessor();
 
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
@@ -67,23 +67,16 @@ public:
 
 private:
     //==============================================================================
-    // DSP processing objects
-    juce::dsp::ProcessorChain<
-        juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<float>, juce::dsp::IIR::Coefficients<float>>, // Low band
-        juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<float>, juce::dsp::IIR::Coefficients<float>>, // Mid band
-        juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<float>, juce::dsp::IIR::Coefficients<float>>  // High band
-    > processorChain;
-    
     // Enumeration for processor chain indices
     enum ChainPositions {
         LowBand,
         MidBand,
         HighBand
     };
-    
-    // Processing context for audio blocks
-    juce::dsp::AudioBlock<float> block;
-    juce::dsp::ProcessContextReplacing<float> context;
+
+    // DSP processing objects - declare and initialize in constructor
+    using IIRFilter = juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<float>, juce::dsp::IIR::Coefficients<float>>;
+    juce::dsp::ProcessorChain<IIRFilter, IIRFilter, IIRFilter> processorChain;
     
     // Audio parameter creation helper
     juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
