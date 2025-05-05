@@ -24,6 +24,20 @@ A simple volume control audio plugin built with the JUCE framework. This plugin 
 - C++ compiler with C++17 support
 - JUCE framework (included as a subdirectory)
 
+### Platform-Specific Requirements
+
+#### Windows Requirements
+
+- **Visual Studio 2022 Community Edition** with "Desktop development with C++" workload installed
+  - Download from: https://visualstudio.microsoft.com/vs/community/
+  - During installation, you MUST select the "Desktop development with C++" workload
+  - This includes necessary compilers, libraries, and Windows SDK
+
+- **Visual Studio Developer PowerShell**
+  - Building on Windows requires the specialized PowerShell that comes with Visual Studio
+  - Regular PowerShell will not have the necessary environment variables set for C++ development
+  - Find it in the Start menu as "Developer PowerShell for VS 2022"
+
 #### Linux/WSL Dependencies
 
 When building on Linux or WSL (Windows Subsystem for Linux), additional system dependencies are required. The `setup_scripts.sh` script can automatically install these dependencies on Debian/Ubuntu-based systems:
@@ -35,8 +49,6 @@ chmod +x setup_scripts.sh
 # Run the script and follow the prompts
 ./setup_scripts.sh
 ```
-
-See [README_BUILD.md](./README_BUILD.md) for detailed information about required dependencies.
 
 ### Build Steps for Linux
 
@@ -58,31 +70,36 @@ For a release (optimized) build:
 
 The built plugins will be available in the `build` directory under their respective format folders.
 
-### Building for Windows (Recommended Approach)
+### Build Steps for Windows
 
-JUCE officially supports building Windows plugins with Visual Studio. We recommend using Visual Studio Code with Remote Development for the best experience:
+1. Install Visual Studio 2022 with C++ development workload
 
-1. **Install Required Software**:
-   - Visual Studio 2019 Community Edition or newer on Windows
-   - Visual Studio Code with the Remote - WSL extension
+2. Open "Developer PowerShell for VS 2022" from the Start menu
 
-2. **Open Project in VSCode**:
-   - Open VSCode and connect to your WSL instance
-   - Open the VolumeControlPlugin folder
-   - VSCode will detect the `.vscode` configuration automatically
+3. If developing in WSL, navigate to the WSL path:
+   ```powershell
+   cd \\wsl.localhost\Ubuntu\path\to\VolumeControlPlugin
+   ```
 
-3. **Build the Plugin**:
-   - Press `Ctrl+Shift+B` to access build tasks
-   - Select "Build on Windows" to build using Visual Studio
-   - The build process will execute on the Windows side
+4. Run the build script:
+   ```powershell
+   PowerShell -ExecutionPolicy Bypass -File windows_build_from_wsl.ps1
+   ```
 
-See [VSCode_README.md](./VSCode_README.md) for detailed instructions on setting up and using the VSCode Remote Development workflow.
+The built plugin will be available at:
+```
+C:\Temp\VolumeControlPlugin\build_vs\VolumeControlPlugin_artefacts\Release\VST3\VolumeControlPlugin.vst3
+```
 
-## Usage
+> **IMPORTANT**: Using regular PowerShell instead of Developer PowerShell will likely result in build failures due to missing environment variables and tools.
 
-1. Load the plugin in your favorite DAW (Digital Audio Workstation)
-2. Adjust the volume using the vertical slider
-3. The volume setting will be saved with your project
+## Using the Built Plugin
+
+1. After building, find the VST3 plugin at the location shown in the build output
+2. Copy it to your VST3 directory or configure your DAW to find it in the build location
+3. Load the plugin in your favorite DAW (Digital Audio Workstation)
+4. Adjust the volume using the vertical slider
+5. The volume setting will be saved with your project
 
 ## Development
 
@@ -95,7 +112,9 @@ This plugin demonstrates basic audio plugin development with JUCE, including:
 
 Feel free to use this as a starting point for your own audio plugin projects.
 
-## Documentation
+## Detailed Documentation
 
-- [VSCode_README.md](./VSCode_README.md) - Detailed VSCode Remote Development instructions
-- [README_BUILD.md](./README_BUILD.md) - Comprehensive build instructions for Linux
+For more detailed build instructions, troubleshooting, and advanced configuration:
+
+- [README_BUILD.md](./README_BUILD.md) - Comprehensive build instructions for both Windows and Linux
+- [WSL_TO_WINDOWS_BUILD.md](./WSL_TO_WINDOWS_BUILD.md) - Detailed guide for building from WSL to Windows
