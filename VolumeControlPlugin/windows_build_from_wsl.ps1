@@ -358,7 +358,7 @@ if (!(Test-Path $buildDir)) {
 # Create direct batch file for Visual Studio build
 $buildBatchPath = Join-Path $WindowsDestination "win_cmake_build.bat"
 
-@"
+$batchContent = @"
 @echo off
 setlocal enabledelayedexpansion
 
@@ -387,6 +387,12 @@ if %ERRORLEVEL% NEQ 0 (
     echo CMake configuration failed
     exit /b 1
 )
+"@
+
+$batchContent | Out-File -FilePath $buildBatchPath -Encoding ASCII
+
+# Add building project part to batch content
+$batchContent += @"
 
 echo Building project...
 cmake --build . --config $BuildType
@@ -397,7 +403,10 @@ if %ERRORLEVEL% NEQ 0 (
 
 echo Build completed successfully
 exit /b 0
-"@ | Out-File -FilePath $buildBatchPath -Encoding ASCII
+"@
+
+# Write batch content to file
+$batchContent | Out-File -FilePath $buildBatchPath -Encoding ASCII
 
 # Execute the batch file
 Write-Host ""
@@ -415,7 +424,7 @@ try {
         
         $fallbackBatchPath = Join-Path $WindowsDestination "win_fallback_build.bat"
         
-        @"
+        $fallbackBatchContent = @"
 @echo off
 setlocal enabledelayedexpansion
 
@@ -450,6 +459,10 @@ if %ERRORLEVEL% NEQ 0 (
     echo CMake configuration failed
     exit /b 1
 )
+"@
+
+$fallbackBatchContent += @"
+
 
 echo Building project...
 cmake --build . --config $BuildType
@@ -460,7 +473,10 @@ if %ERRORLEVEL% NEQ 0 (
 
 echo Build completed successfully
 exit /b 0
-"@ | Out-File -FilePath $fallbackBatchPath -Encoding ASCII
+"@
+
+# Write fallback batch content to file
+$fallbackBatchContent | Out-File -FilePath $fallbackBatchPath -Encoding ASCII
         
         $fallbackProcess = Start-Process -FilePath "cmd.exe" -ArgumentList "/c `"$fallbackBatchPath`"" -NoNewWindow -Wait -PassThru
         
