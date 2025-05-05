@@ -26,7 +26,7 @@ class ThreeBandEQAudioProcessor : public juce::AudioProcessor
 public:
     //==============================================================================
     ThreeBandEQAudioProcessor();
-    ~ThreeBandEQAudioProcessor() override;
+    ~ThreeBandEQAudioProcessor() noexcept;
 
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
@@ -74,12 +74,17 @@ private:
         HighBand
     };
 
-    // DSP processing objects
-    using Filter = juce::dsp::IIR::Filter<float>;
-    using Coefficients = juce::dsp::IIR::Coefficients<float>;
-    using IIRFilter = juce::dsp::ProcessorDuplicator<Filter, Coefficients>;
+    // Define the filter type we'll use
+    using FilterBand = juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<float>, 
+                                                     juce::dsp::IIR::Coefficients<float>>;
     
-    juce::dsp::ProcessorChain<IIRFilter, IIRFilter, IIRFilter> processorChain;
+    // DSP processing objects
+    juce::dsp::ProcessorChain<FilterBand, FilterBand, FilterBand> processorChain;
+    
+    // Audio processing variables
+    juce::AudioBuffer<float> dummyBuffer; // Used to initialize these below
+    juce::dsp::AudioBlock<float> audioBlock { dummyBuffer };
+    juce::dsp::ProcessContextReplacing<float> processContext { audioBlock };
     
     // Audio parameter creation helper
     juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
