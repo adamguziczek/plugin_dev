@@ -21,7 +21,7 @@ class ThreeBandEQAudioProcessor  : public juce::AudioProcessor
 public:
     //==============================================================================
     ThreeBandEQAudioProcessor();
-    ~ThreeBandEQAudioProcessor() override;
+    ~ThreeBandEQAudioProcessor() noexcept override;
 
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
@@ -62,10 +62,10 @@ public:
 
 private:
     //==============================================================================
-    // Individual filters for each band
-    juce::dsp::IIR::Filter<float> lowBandFilter;
-    juce::dsp::IIR::Filter<float> midBandFilter;
-    juce::dsp::IIR::Filter<float> highBandFilter;
+    // Filter objects for each band
+    std::unique_ptr<juce::dsp::IIR::Filter<float>> lowBand;
+    std::unique_ptr<juce::dsp::IIR::Filter<float>> midBand;
+    std::unique_ptr<juce::dsp::IIR::Filter<float>> highBand;
     
     // Audio parameter creation helper
     juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
