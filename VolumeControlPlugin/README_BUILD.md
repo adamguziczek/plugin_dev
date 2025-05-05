@@ -117,17 +117,34 @@ Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
 
 If you're developing in WSL (Windows Subsystem for Linux) but need to build for Windows, a special approach is needed since Windows build tools cannot directly access WSL paths.
 
+### Required Prerequisites for WSL-to-Windows Building
+
+Before attempting to build from WSL to Windows, you must install:
+
+1. **Visual Studio Community 2022** with the **"Desktop development with C++"** workload
+   - Download from: https://visualstudio.microsoft.com/vs/community/
+   - During installation, make sure to select "Desktop development with C++" workload
+   - This includes necessary compilers, Windows SDK and build tools
+
+2. **CMake** (3.15 or higher) on the Windows side
+
 ### Quick Start Guide for WSL-to-Windows Building
 
-1. **Open PowerShell** on Windows
+1. **Open Visual Studio Developer PowerShell** (NOT regular PowerShell)
+   - Search for "Developer PowerShell for VS 2022" in the Windows Start menu
+   - This specialized PowerShell has all the necessary environment variables set up for building
+   
 2. **Navigate to your WSL project path**:
    ```powershell
    cd \\wsl.localhost\Ubuntu\path\to\VolumeControlPlugin
    ```
+   
 3. **Run the WSL-to-Windows build script**:
    ```powershell
    PowerShell -ExecutionPolicy Bypass -File windows_build_from_wsl.ps1
    ```
+
+> **IMPORTANT**: The Visual Studio Developer PowerShell is essential as it has the proper environment variables and paths configured for C++ development. Regular PowerShell won't have access to the necessary build tools.
 
 This script will:
 - Copy your project files from WSL to a Windows path (default: C:\Temp\VolumeControlPlugin)
@@ -152,29 +169,45 @@ For complete details on this approach, see the dedicated guide:
 
 ### Manual Build on Windows
 
-If you prefer to manually run the build commands:
+If you prefer to manually run the build commands using Visual Studio Developer PowerShell:
 
-1. **Create a build directory**:
+1. **Open Visual Studio Developer PowerShell** from the Start menu
+
+2. **Navigate to your project directory**:
+   ```powershell
+   # If in WSL:
+   cd \\wsl.localhost\Ubuntu\path\to\VolumeControlPlugin
+   
+   # If on Windows:
+   cd C:\path\to\VolumeControlPlugin
+   ```
+
+3. **Create a build directory**:
    ```powershell
    mkdir build_vs
    cd build_vs
    ```
 
-2. **Configure with CMake**:
+4. **Configure with CMake**:
    ```powershell
+   # For Visual Studio 2022:
+   cmake -G "Visual Studio 17 2022" -A x64 ..
+   
+   # For Visual Studio 2019:
    cmake -G "Visual Studio 16 2019" -A x64 ..
    ```
-   *Note: Use "Visual Studio 17 2022" for Visual Studio 2022*
 
-3. **Build the project**:
+5. **Build the project**:
    ```powershell
    cmake --build . --config Release
    ```
 
-4. **Find the built plugin**:
+6. **Find the built plugin**:
    ```
    build_vs\VolumeControlPlugin_artefacts\Release\VST3\VolumeControlPlugin.vst3
    ```
+
+The Developer PowerShell provides the correct environment variables and paths needed for Visual Studio build tools to work properly.
 
 ## Building on Linux
 
@@ -242,31 +275,43 @@ cp -r build/VolumeControlPlugin_artefacts/VST3/VolumeControlPlugin.vst3 ~/.vst3/
 
 ### Common Issues on Windows
 
-1. **PowerShell execution policy**:
+1. **Wrong PowerShell variant**:
+   - Make sure you're using "Developer PowerShell for VS 2022" and not regular PowerShell
+   - The Developer PowerShell has necessary environment variables set up for C++ builds
+   - You can find it in the Start menu or at: `C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\Launch-VsDevShell.ps1`
+
+2. **PowerShell execution policy**:
    ```powershell
    Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
    ```
 
-2. **Visual Studio not found**:
-   - Ensure Visual Studio is installed with C++ development tools
-   - For VS 2022, modify the CMake generator in the script to "Visual Studio 17 2022"
+3. **Visual Studio not found**:
+   - Ensure Visual Studio 2022 is installed with "Desktop development with C++" workload
+   - You must select this workload during installation or add it later via the Visual Studio Installer
+   - Without this workload, necessary compilers will be missing
 
-3. **CMake not found**:
+4. **CMake not found**:
    - Install CMake from https://cmake.org/download/
    - Add CMake to your PATH
+   - Verify with `cmake --version`
 
-4. **JUCE not found**:
+5. **JUCE not found**:
    - Ensure the JUCE directory is in the parent directory of VolumeControlPlugin
    - Clone JUCE: `git clone https://github.com/juce-framework/JUCE.git`
 
-5. **Build errors**:
+6. **Build errors**:
    - Clean the build directories: `.\clean.ps1` (or `./clean.sh` on Linux)
    - Try building with the Debug configuration: `.\build_plugin.ps1 Debug`
 
-6. **WSL path errors**:
+7. **WSL path errors**:
    - If you see "UNC paths are not supported" or "Cannot build directly from WSL path"
    - Use the `windows_build_from_wsl.ps1` script as described in the WSL-to-Windows section
    - Or clone the repository to a Windows path and build from there
+
+8. **Permission errors during installation**:
+   - If you see "Permission denied" errors when trying to install to Program Files
+   - Build with automatic installation disabled (this is now the default setting)
+   - Manually copy the plugin to your VST3 directory with administrator privileges
 
 ### Common Issues on Linux
 
