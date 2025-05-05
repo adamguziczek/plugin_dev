@@ -46,8 +46,8 @@ YourPluginAudioProcessor::~YourPluginAudioProcessor()
 //==============================================================================
 const juce::String YourPluginAudioProcessor::getName() const
 {
-    // Update this to match your actual plugin name
-    return JucePlugin_Name;
+    // CUSTOMIZE: Update this to match your actual plugin name
+    return "Your Plugin Name";
 }
 
 bool YourPluginAudioProcessor::acceptsMidi() const
@@ -229,10 +229,13 @@ bool YourPluginAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* YourPluginAudioProcessor::createEditor()
 {
-    return new YourPluginAudioProcessorEditor (*this);
+    // CUSTOMIZE: Uncomment one of these options:
     
-    // Alternatively, use the generic editor if you just want parameter sliders:
-    // return new juce::GenericAudioProcessorEditor (*this);
+    // For a custom editor (once you've created PluginEditor.h/cpp):
+    // return new YourPluginAudioProcessorEditor (*this);
+    
+    // For a simple generic editor with parameter sliders:
+    return new juce::GenericAudioProcessorEditor (*this);
 }
 
 //==============================================================================
