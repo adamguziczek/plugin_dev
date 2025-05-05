@@ -275,21 +275,31 @@ if ($vsInstallations.Count -eq 0) {
 
 # Select the newest Visual Studio version
 $vs = $vsInstallations | Sort-Object -Property installationVersion -Descending | Select-Object -First 1
-$vsVersion = $vs.installationVersion.Split('.')[0]
-Write-Host "Visual Studio $vsVersion found at: $($vs.installationPath)" -ForegroundColor Green
 
-# Determine Visual Studio year and CMake generator
-$cmakeGenerator = "Visual Studio 16 2019"  # Default
-if ($vsVersion -eq "2022") {
-    $cmakeGenerator = "Visual Studio 17 2022"
-    $vsYear = "2022"
-} elseif ($vsVersion -eq "2019") {
+# More robust version detection logic
+$rawVsVersion = $vs.installationVersion
+$vsVersionNumber = $rawVsVersion.Split('.')[0]
+
+# Debug output to see what's being detected
+Write-Host "Detected Visual Studio version: $rawVsVersion" -ForegroundColor Green
+Write-Host "Visual Studio $vsVersionNumber found at: $($vs.installationPath)" -ForegroundColor Green
+
+# Determine Visual Studio year and CMake generator with more robust logic
+# Default to VS 2022 if we're on a new version or unsure
+$cmakeGenerator = "Visual Studio 17 2022"
+$vsYear = "2022"
+
+# Only override if we're sure it's an older version
+if ($vsVersionNumber -eq "2019" -or $vsVersionNumber -eq "16") {
     $cmakeGenerator = "Visual Studio 16 2019"
     $vsYear = "2019"
-} elseif ($vsVersion -eq "2017") {
+} elseif ($vsVersionNumber -eq "2017" -or $vsVersionNumber -eq "15") {
     $cmakeGenerator = "Visual Studio 15 2017"
     $vsYear = "2017"
 }
+
+# Always print the selected generator
+Write-Host "Using CMake generator: $cmakeGenerator" -ForegroundColor Green
 
 # Find vcvarsall.bat
 $vcvarsPath = ""
@@ -358,6 +368,9 @@ if (!(Test-Path $buildDir)) {
 # Create direct batch file for Visual Studio build
 $buildBatchPath = Join-Path $WindowsDestination "win_cmake_build.bat"
 
+# Make sure we use a fixed literal for the generator to prevent any expansion issues
+$cmakeGeneratorString = $cmakeGenerator  # Store in a separate variable for clarity
+
 $batchContent = @"
 @echo off
 setlocal enabledelayedexpansion
@@ -373,6 +386,7 @@ echo --------- Environment Info ---------
 echo Visual Studio Path: $($vs.installationPath)
 echo Windows SDK Version: $sdkVersion
 echo Current Directory: %CD%
+echo CMake Generator: $cmakeGeneratorString
 echo ----------------------------------
 
 cd $buildDir
@@ -382,7 +396,7 @@ if %ERRORLEVEL% NEQ 0 (
 )
 
 echo Running CMake configuration...
-cmake -G "$cmakeGenerator" -A x64 ..
+cmake -G "$cmakeGeneratorString" -A x64 ..
 if %ERRORLEVEL% NEQ 0 (
     echo CMake configuration failed
     exit /b 1
@@ -454,7 +468,8 @@ if exist CMakeFiles (
 )
 
 echo Running simplified CMake configuration...
-cmake -G "$cmakeGenerator" -A x64 ..
+echo Using generator: $cmakeGeneratorString
+cmake -G "$cmakeGeneratorString" -A x64 ..
 if %ERRORLEVEL% NEQ 0 (
     echo CMake configuration failed
     exit /b 1
