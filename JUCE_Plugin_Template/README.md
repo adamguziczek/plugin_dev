@@ -138,6 +138,15 @@ Copy the VST3 to the system VST3 directory:
 copy "build_vs\YourPluginName_artefacts\Release\VST3\YourPluginName.vst3" "C:\Program Files\Common Files\VST3\"
 ```
 
+## Testing Your Plugin UI
+
+You can test your plugin UI without loading it in a DAW! See [TESTING_UI.md](./TESTING_UI.md) for detailed instructions on:
+
+- Using the Standalone application format
+- Using JUCE's AudioPluginHost
+- Debugging your UI
+- Creating automated UI tests
+
 ## Next Steps
 
 - Add more parameters to your plugin
