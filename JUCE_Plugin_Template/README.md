@@ -147,6 +147,28 @@ You can test your plugin UI without loading it in a DAW! See [TESTING_UI.md](./T
 - Debugging your UI
 - Creating automated UI tests
 
+## VS Code Integration
+
+This template includes VS Code configuration files to streamline development:
+
+### Available Tasks (Ctrl+Shift+B)
+
+- **Build (Linux)** - Build the plugin on Linux/WSL
+- **Clean (Linux)** - Clean build directories on Linux/WSL
+- **Build (Windows)** - Build the plugin for Windows from WSL
+- **Build (Windows - Skip Copy)** - Faster rebuilds for Windows
+- **Clean (Windows)** - Clean Windows build directories
+- **Run Standalone (Linux/Windows)** - Launch the standalone application
+
+### Debugging (F5)
+
+The template includes debug configurations for both platforms:
+
+- **Debug Standalone (Linux)** - Debug the Linux standalone application
+- **Debug Standalone (Windows)** - Debug the Windows standalone application
+
+These configurations make it easy to set breakpoints in your code and debug the UI directly from VS Code.
+
 ## Next Steps
 
 - Add more parameters to your plugin
