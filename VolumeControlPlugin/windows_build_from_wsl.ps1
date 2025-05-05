@@ -536,9 +536,15 @@ $fallbackBatchContent | Out-File -FilePath $fallbackBatchPath -Encoding ASCII
     Write-Host "ERROR: Failed to run build process: $_" -ForegroundColor Red
     exit 1
 } finally {
-    # Clean up temp files
-    Remove-Item $buildBatchPath -ErrorAction SilentlyContinue
-    Remove-Item $fallbackBatchPath -ErrorAction SilentlyContinue
+    # Clean up temp files - only if they exist
+    if (Test-Path $buildBatchPath) {
+        Remove-Item $buildBatchPath -ErrorAction SilentlyContinue
+    }
+    
+    # Only try to remove fallback path if it was created
+    if ($fallbackBatchPath -and (Test-Path $fallbackBatchPath)) {
+        Remove-Item $fallbackBatchPath -ErrorAction SilentlyContinue
+    }
 }
 
 Write-Host ""
