@@ -6,7 +6,7 @@
 
 The plugin is built for flexibility and expression, offering precise timing control, customizable waveforms, and tempo sync. It is especially useful in styles of music where modulation is part of the rhythmic or textural identity—such as electronic, experimental, or cinematic production. Wobbler’s design enables producers to treat modulation not just as automation, but as a compositional element.
 
-Conceptual UI:
+## Conceptual UI:
 ![alt text](image.png)
 
 ## Core User Requirements
