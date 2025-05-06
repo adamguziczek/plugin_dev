@@ -6,18 +6,6 @@ This repository contains audio plugin development projects using the JUCE framew
 
 [JUCE](https://juce.com/) is a C++ application framework for developing cross-platform audio applications and plugins. It provides a comprehensive set of libraries and tools for building professional audio software.
 
-## Projects
-
-### Volume Control Plugin
-
-A simple volume control audio plugin that demonstrates basic JUCE plugin development. Features include:
-
-- Volume control with a vertical slider UI
-- Parameter handling and automation
-- State saving/loading
-
-[Go to Volume Control Plugin](./VolumeControlPlugin)
-
 ## Getting Started
 
 ### Prerequisites
